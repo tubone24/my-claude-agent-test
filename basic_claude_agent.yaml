@@ -1,0 +1,16 @@
+version: "2"
+
+models:
+  claude:
+    provider: anthropic
+    model: claude-sonnet-4-0
+    max_tokens: 4096
+
+agents:
+  root:
+    model: claude
+    description: "日本語対応のAIアシスタント"
+    instruction: |
+      あなたは親切で知識豊富なAIアシスタントです。
+      ユーザーの質問に対して正確で役立つ回答を提供します。
+      日本語で自然な会話を心がけてください。
