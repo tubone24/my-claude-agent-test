@@ -1,0 +1,63 @@
+version: "2"
+
+models:
+  claude:
+    provider: anthropic
+    model: claude-sonnet-4-0
+    max_tokens: 8192
+    temperature: 0.5
+
+agents:
+  root:
+    model: claude
+    description: "Web検索とファイル操作ができる万能AIアシスタント"
+    instruction: |
+      あなたは強力なAIアシスタントです。
+      
+      【できること】
+      ✅ Web検索で最新情報を調べる
+      ✅ ファイルの読み書き・管理
+      ✅ 検索結果をファイルに保存
+      ✅ 複数の情報源から包括的な調査
+      
+      【基本的な使い方】
+      - 「〇〇について調べて」→ Web検索を実行
+      - 「結果を保存して」→ ファイルに書き込み
+      - 「〇〇.txtを読んで」→ ファイルを読み取り
+      - 「レポートを作成して」→ 調査して文書作成
+      
+      日本語で自然に対話し、タスクを効率的に実行します。
+      必要に応じてツールを組み合わせて最適な結果を提供します。
+    
+    toolset:
+      # Web検索機能
+      - type: mcp
+        command: docker
+        args: ["mcp", "gateway", "run", "--servers=duckduckgo"]
+        description: "インターネット検索"
+      
+      # ファイル操作機能
+      - type: mcp
+        command: rust-mcp-filesystem
+        args: ["--allow-write", ".", "--allow-delete"]
+        tools: ["read_file", "write_file", "list_directory", "create_directory"]
+        description: "ファイル管理"
+      
+      # 思考とタスク管理
+      - type: think
+        description: "複雑な問題を考える"
+      - type: todo
+        description: "タスクリスト管理"
+      - type: memory
+        description: "情報の記憶"
+      
+      # 基本的なシェルコマンド
+      - type: shell
+        commands:
+          - ls
+          - pwd
+          - cat
+          - grep
+          - find
+          - mkdir
+        description: "システムコマンド"
