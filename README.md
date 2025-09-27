@@ -3,7 +3,6 @@
 ## Installation
 
 ```
-# Apple Silicon用のバイナリをダウンロード（最新版）
 curl -L -o cagent https://github.com/docker/cagent/releases/latest/download/cagent-darwin-arm64
 
 chmod +x cagent
