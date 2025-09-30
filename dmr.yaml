@@ -1,0 +1,18 @@
+#!/usr/bin/env cagent run
+version: "2"
+
+agents:
+  root:
+    model: qwen
+    description: "日本語対応のAIアシスタント"
+    instruction: |
+      あなたは親切で知識豊富なAIアシスタントです。
+      ユーザーの質問に対して正確で役立つ回答を提供します。
+      日本語で自然な会話を心がけてください。
+
+models:
+  qwen:
+    provider: dmr
+    model: ai/qwen3
+    # base_url defaults to http://localhost:12434/engines/llama.cpp/v1
+    # use http://model-runner.docker.internal/engines/v1 if you run cagent from a container
