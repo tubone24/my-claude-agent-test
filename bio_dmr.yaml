@@ -2,15 +2,15 @@
 version: "2"
 
 models:
-  claude:
-    provider: anthropic
-    model: claude-sonnet-4-0
-    max_tokens: 8192
-    temperature: 0.5
+  qwen:
+    provider: dmr
+    model: ai/qwen3
+    # base_url defaults to http://localhost:12434/engines/llama.cpp/v1
+    # use http://model-ru
 
 agents:
   root:
-    model: claude
+    model: qwen
     description: Create a biography of the user based on internet searches.
     instruction: |
       Your goal is to present the user with a concise and informative biography based on their online presence.
