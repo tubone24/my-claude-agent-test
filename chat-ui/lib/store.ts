@@ -494,16 +494,14 @@ export const useChatStore = create<ChatStore>()(
                   case 'stream_stopped':
                     // ストリーミング終了 - ローディング状態を確実に解除
                     console.log('Stream stopped:', data);
-                    set({ isLoading: false });
-                    // ストリーミング終了を明示的にマーク
                     streamingStopped = true;
+                    set({ 
+                      isLoading: false,
+                      streamController: null 
+                    });
                     break;
 
                   case 'token_usage':
-                    // ストリーミング終了後は何もしない
-                    if (streamingStopped) {
-                      console.log('Token usage received after stream_stopped, ignoring loading state');
-                    }
                     // トークン使用量を保存
                     console.log('Token usage:', data);
                     if (data.usage) {
@@ -515,17 +513,23 @@ export const useChatStore = create<ChatStore>()(
                         }
                       });
                     }
+                    // ストリーミング終了後はローディング状態を維持しない
+                    if (streamingStopped) {
+                      console.log('Token usage received after stream_stopped, ensuring loading is false');
+                      set({ isLoading: false });
+                    }
                     break;
 
                   case 'session_title':
-                    // ストリーミング終了後は何もしない
-                    if (streamingStopped) {
-                      console.log('Session title received after stream_stopped, ignoring loading state');
-                    }
                     // セッションタイトルを保存
                     console.log('Session title:', data);
                     if (data.title) {
                       set({ currentSessionTitle: data.title });
+                    }
+                    // ストリーミング終了後はローディング状態を維持しない
+                    if (streamingStopped) {
+                      console.log('Session title received after stream_stopped, ensuring loading is false');
+                      set({ isLoading: false });
                     }
                     break;
 
