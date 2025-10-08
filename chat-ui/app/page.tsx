@@ -301,6 +301,19 @@ export default function Home() {
                   messages.map((message, index) => {
                     // ツールメッセージの場合は別のUIを表示
                     if (message.role === 'tool' && message.messageType === 'tool_result') {
+                      // create_todosの場合は特別な表示
+                      let todoList: any[] = [];
+                      if (message.toolName === 'create_todos' && message.toolCall?.function?.arguments) {
+                        try {
+                          const args = JSON.parse(message.toolCall.function.arguments);
+                          if (args.todos && Array.isArray(args.todos)) {
+                            todoList = args.todos;
+                          }
+                        } catch (e) {
+                          console.error('Failed to parse create_todos arguments:', e);
+                        }
+                      }
+
                       return (
                         <div key={message.id || index} className="flex justify-start">
                           <div className="flex items-start space-x-3 max-w-[80%]">
@@ -314,9 +327,27 @@ export default function Home() {
                                     {message.toolName} の実行結果
                                   </span>
                                 </div>
-                                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-blue-900">
-                                  {message.content}
-                                </pre>
+
+                                {todoList.length > 0 ? (
+                                  <div className="space-y-2">
+                                    <div className="text-sm text-blue-900 mb-2">
+                                      {todoList.length}件のタスクを作成しました
+                                    </div>
+                                    <ul className="space-y-2">
+                                      {todoList.map((todo, idx) => (
+                                        <li key={idx} className="flex items-start gap-2 text-sm text-blue-900">
+                                          <span className="text-blue-500 flex-shrink-0">✓</span>
+                                          <span>{todo.description}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ) : (
+                                  <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-blue-900">
+                                    {message.content}
+                                  </pre>
+                                )}
+
                                 <div className="text-xs opacity-70 mt-2 text-blue-600">
                                   {new Date(message.timestamp).toLocaleTimeString()}
                                 </div>
@@ -335,8 +366,15 @@ export default function Home() {
                       >
                         <div className="flex items-start space-x-3 max-w-[80%]">
                           {message.role === 'assistant' && (
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              🤖
+                            <div className="flex flex-col items-center flex-shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                🤖
+                              </div>
+                              {message.agentName && (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {message.agentName}
+                                </div>
+                              )}
                             </div>
                           )}
                           <Card className={message.role === 'user' ? 'bg-primary text-primary-foreground' : ''}>

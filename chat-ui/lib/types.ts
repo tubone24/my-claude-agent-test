@@ -66,6 +66,15 @@ export interface Message {
   timestamp: string;
   messageType?: 'normal' | 'tool_result';
   toolName?: string;
+  agentName?: string;
+  toolCall?: {
+    id: string;
+    type: string;
+    function: {
+      name: string;
+      arguments: string;
+    };
+  };
   tokens?: {
     input?: number;
     output?: number;

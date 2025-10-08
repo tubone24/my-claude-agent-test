@@ -48,7 +48,7 @@ interface ChatStore {
   addMessage: (message: Message) => void;
   updateLastMessage: (content: string) => void;
   appendToLastMessage: (content: string) => void;
-  appendToLastMessagePart: (content: string, type: 'reasoning' | 'choice') => void;
+  appendToLastMessagePart: (content: string, type: 'reasoning' | 'choice', agentName?: string) => void;
   sendMessage: (content: string) => Promise<void>;
   clearMessages: () => void;
 
@@ -269,7 +269,7 @@ export const useChatStore = create<ChatStore>()(
         }));
       },
 
-      appendToLastMessagePart: (content: string, type: 'reasoning' | 'choice') => {
+      appendToLastMessagePart: (content: string, type: 'reasoning' | 'choice', agentName?: string) => {
         set(state => {
           // 最後のメッセージを確認
           const lastMessage = state.messages[state.messages.length - 1];
@@ -283,6 +283,7 @@ export const useChatStore = create<ChatStore>()(
               content: content,
               contentParts: [{ type, content }],
               timestamp: new Date().toISOString(),
+              agentName: agentName,
             };
             return {
               messages: [...state.messages, newMessage]
@@ -301,6 +302,7 @@ export const useChatStore = create<ChatStore>()(
               content: content,
               contentParts: [{ type, content }],
               timestamp: new Date().toISOString(),
+              agentName: agentName,
             };
             return {
               messages: [...state.messages, newMessage]
@@ -330,7 +332,8 @@ export const useChatStore = create<ChatStore>()(
               return {
                 ...msg,
                 content: fullContent,
-                contentParts: updatedContentParts
+                contentParts: updatedContentParts,
+                agentName: agentName || msg.agentName,
               };
             })
           };
@@ -380,9 +383,12 @@ export const useChatStore = create<ChatStore>()(
 
         try {
           set({ isLoading: true });
-          
+
           const executeRequest: ExecuteAgentRequest = { content: message };
-          
+
+          // ストリーミング終了フラグ
+          let streamingStopped = false;
+
           // executeAgentから直接AbortControllerを取得
           const controller = cagentAPI.executeAgent(
             sessionId,
@@ -404,14 +410,14 @@ export const useChatStore = create<ChatStore>()(
                   case 'agent_choice_reasoning':
                     // エージェントの思考過程をアシスタントメッセージに追加（reasoning タイプ）
                     if (data.content) {
-                      appendToLastMessagePart(data.content, 'reasoning');
+                      appendToLastMessagePart(data.content, 'reasoning', data.agent_name);
                     }
                     break;
 
                   case 'agent_choice':
                     // エージェントの最終回答をアシスタントメッセージに追加（choice タイプ）
                     if (data.content) {
-                      appendToLastMessagePart(data.content, 'choice');
+                      appendToLastMessagePart(data.content, 'choice', data.agent_name);
                     }
                     break;
 
@@ -478,18 +484,26 @@ export const useChatStore = create<ChatStore>()(
                         timestamp: new Date().toISOString(),
                         messageType: 'tool_result',
                         toolName: data.tool_call?.function?.name || 'ツール',
+                        toolCall: data.tool_call,
+                        agentName: data.agent_name,
                       };
                       addMessage(toolMessage);
                     }
                     break;
 
                   case 'stream_stopped':
-                    // ストリーミング終了 - ローディング状態を解除
+                    // ストリーミング終了 - ローディング状態を確実に解除
                     console.log('Stream stopped:', data);
                     set({ isLoading: false });
+                    // ストリーミング終了を明示的にマーク
+                    streamingStopped = true;
                     break;
 
                   case 'token_usage':
+                    // ストリーミング終了後は何もしない
+                    if (streamingStopped) {
+                      console.log('Token usage received after stream_stopped, ignoring loading state');
+                    }
                     // トークン使用量を保存
                     console.log('Token usage:', data);
                     if (data.usage) {
@@ -504,6 +518,10 @@ export const useChatStore = create<ChatStore>()(
                     break;
 
                   case 'session_title':
+                    // ストリーミング終了後は何もしない
+                    if (streamingStopped) {
+                      console.log('Session title received after stream_stopped, ignoring loading state');
+                    }
                     // セッションタイトルを保存
                     console.log('Session title:', data);
                     if (data.title) {
