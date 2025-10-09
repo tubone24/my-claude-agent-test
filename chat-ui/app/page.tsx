@@ -377,7 +377,7 @@ export default function Home() {
                               )}
                             </div>
                           )}
-                          <Card className={message.role === 'user' ? 'bg-primary text-primary-foreground' : ''}>
+                          <Card className={message.role === 'user' ? 'bg-primary text-white' : ''}>
                             <CardContent className="p-3">
                               {/* contentPartsがある場合はパートごとにレンダリング */}
                               {message.contentParts && message.contentParts.length > 0 ? (
@@ -401,7 +401,7 @@ export default function Home() {
                                   ))}
                                 </div>
                               ) : (
-                                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground">
+                                <pre className={`whitespace-pre-wrap font-sans text-sm leading-relaxed ${message.role === 'user' ? 'text-white' : 'text-foreground'}`}>
                                   {message.content}
                                 </pre>
                               )}
