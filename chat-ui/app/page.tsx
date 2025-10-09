@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useChatStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import ReactMarkdown from 'react-markdown'
@@ -35,7 +34,6 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   useEffect(() => {
-    // アプリ初期化時にエージェントとセッションを読み込む
     const initialize = async () => {
       await loadAgents()
       await loadSessions()
@@ -58,6 +56,15 @@ export default function Home() {
   }
 
   const handleSelectAgent = async (agent: any) => {
+    // ストリーミング中の場合は強制停止
+    if (isLoading) {
+      try {
+        stopStreaming()
+      } catch (error) {
+        console.error('Error stopping streaming:', error)
+      }
+    }
+    
     setCurrentAgent(agent)
     // エージェント切り替え時に常に新しいセッションを作成（実用性のため自動承認）
     await createSession({ tools_approved: true })
@@ -76,7 +83,7 @@ export default function Home() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center space-y-4">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-muted-foreground">Cagentを初期化中...</p>
+          <p className="text-muted-foreground">Initializing Cagent...</p>
         </div>
       </div>
     )
@@ -87,21 +94,21 @@ export default function Home() {
       <div className="flex items-center justify-center min-h-screen">
         <Card className="max-w-md">
           <CardHeader>
-            <CardTitle className="text-destructive">接続エラー</CardTitle>
+            <CardTitle className="text-destructive">Connection Error</CardTitle>
             <CardDescription>
-              Cagent APIサーバーに接続できません。サーバーが起動していることを確認してください。
+              Unable to connect to the Cagent API server. Please verify that the server is running.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="text-sm text-muted-foreground">
-                エラー詳細: {error}
+                Error Details: {error}
               </div>
               <Button 
                 onClick={() => window.location.reload()} 
                 className="w-full"
               >
-                再試行
+                Retry
               </Button>
             </div>
           </CardContent>
@@ -112,11 +119,11 @@ export default function Home() {
 
   return (
     <div className="flex h-screen bg-background">
-      {/* サイドバー */}
+      {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 bg-muted/30 border-r border-border overflow-hidden`}>
         <div className="p-4 h-full">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Cagent チャット</h2>
+            <h2 className="text-lg font-semibold">Cagent Chat</h2>
             <Button 
               variant="ghost" 
               size="icon"
@@ -126,9 +133,9 @@ export default function Home() {
             </Button>
           </div>
           
-          {/* エージェント一覧 */}
+          {/* Agent list */}
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-muted-foreground">エージェント</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">Agent</h3>
             <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto">
               {agents.map((agent) => (
                 <Card
@@ -148,12 +155,12 @@ export default function Home() {
                       <div className="min-w-0 flex-1">
                         <div className="font-medium text-sm">{agent.name}</div>
                         <div className="text-xs text-muted-foreground line-clamp-2">
-                          {agent.description || '説明なし'}
+                          {agent.description || 'No description'}
                         </div>
                         {agent.multi && (
                           <div className="mt-1">
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-secondary">
-                              マルチエージェント
+                              Multi-Agent
                             </span>
                           </div>
                         )}
@@ -166,7 +173,7 @@ export default function Home() {
                 <Card>
                   <CardContent className="p-6 text-center">
                     <div className="text-muted-foreground">
-                      エージェントが見つかりません
+                      No agents found
                     </div>
                   </CardContent>
                 </Card>
@@ -176,7 +183,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* サイドバートグルボタン（閉じた時用） */}
+      {/* Sidebar toggle button (for when closed) */}
       {!sidebarOpen && (
         <div className="absolute top-4 left-4 z-10">
           <Button 
@@ -189,14 +196,14 @@ export default function Home() {
         </div>
       )}
 
-      {/* メインエリア */}
+      {/* Main Area */}
       <div className="flex-1 flex flex-col">
-        {/* ヘッダー */}
+        {/* Header*/}
         <header className="border-b border-border p-4 bg-background/95 backdrop-blur">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-semibold">
-                {currentAgent?.name || 'エージェントを選択してください'}
+                {currentAgent?.name || 'Please select an agent'}
               </h1>
               {currentAgent?.description && (
                 <p className="text-sm text-muted-foreground mt-1">
@@ -207,12 +214,12 @@ export default function Home() {
             <div className="flex items-center space-x-3">
               {currentSessionTitle && (
                 <div className="text-sm text-muted-foreground">
-                  セッションタイトル: {currentSessionTitle}
+                    Session: "{currentSessionTitle}"
                 </div>
               )}
               {currentTokenUsage && (
                 <div className="text-xs text-muted-foreground border-l pl-3">
-                  入力: {currentTokenUsage.input_tokens || 0} | 出力: {currentTokenUsage.output_tokens || 0}
+                  Input: {currentTokenUsage.input_tokens || 0} | Output: {currentTokenUsage.output_tokens || 0}
                 </div>
               )}
               {isLoading && (
@@ -221,20 +228,20 @@ export default function Home() {
                   size="sm"
                   onClick={handleStopStreaming}
                 >
-                  停止
+                  Stop
                 </Button>
               )}
             </div>
           </div>
         </header>
 
-        {/* チャットエリア */}
+        {/* Chat Area */}
         <div className="flex-1 flex flex-col">
           {currentAgent ? (
             <>
-              {/* メッセージエリア */}
+              {/* Message Area */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {/* デバッグ情報 */}
+                {/* Debug information */}
                 <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded border">
                   <div>Session: {currentSession?.id || 'None'}</div>
                   <div>Agent: {currentAgent?.name || 'None'}</div>
@@ -245,22 +252,22 @@ export default function Home() {
                   )}
                 </div>
 
-                {/* ツール承認バナー */}
+                {/* Tool Approval Banner */}
                 {pendingToolApproval && (
                   <Card className="border-yellow-200 bg-yellow-50">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h4 className="font-medium text-yellow-800">ツール使用情報</h4>
+                          <h4 className="font-medium text-yellow-800">Tool Usage Information</h4>
                           <p className="text-sm text-yellow-600 mt-1">
-                            エージェントが「{currentToolCall?.function?.name || 'ツール'}」を使用しています。
+                            The agent is using "{currentToolCall?.function?.name || 'tool'}"
                           </p>
                           <p className="text-xs text-yellow-500 mt-1">
-                            注：Cagentは自動承認で動作しています。情報表示のみです。
+                            Cagent operates with automatic approval. This is for informational purposes only.
                           </p>
                           {currentToolCall?.function?.arguments && (
                             <p className="text-xs text-yellow-500 mt-1 font-mono">
-                              引数: {currentToolCall.function.arguments}
+                              Args: {currentToolCall.function.arguments}
                             </p>
                           )}
                         </div>
@@ -273,7 +280,7 @@ export default function Home() {
                             }}
                             className="bg-blue-600 text-white hover:bg-blue-700"
                           >
-                            了解
+                            OK
                           </Button>
                         </div>
                       </div>
@@ -290,7 +297,7 @@ export default function Home() {
                         </div>
                         <h3 className="text-lg font-medium mb-2">{currentAgent.name}</h3>
                         <p className="text-sm text-muted-foreground">
-                          メッセージを送信して会話を開始しましょう
+                            Send a message to start the conversation
                         </p>
                       </CardContent>
                     </Card>
@@ -322,14 +329,14 @@ export default function Home() {
                               <CardContent className="p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                   <span className="text-xs font-semibold text-blue-700">
-                                    {message.toolName} の実行結果
+                                    {message.toolName} execution result
                                   </span>
                                 </div>
 
                                 {todoList.length > 0 ? (
                                   <div className="space-y-2">
                                     <div className="text-sm text-blue-900 mb-2">
-                                      {todoList.length}件のタスクを作成しました
+                                      Created {todoList.length} task{todoList.length !== 1 ? 's' : ''}
                                     </div>
                                     <ul className="space-y-2">
                                       {todoList.map((todo, idx) => (
@@ -434,7 +441,7 @@ export default function Home() {
                               <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:0.1s]"></div>
                               <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:0.2s]"></div>
                             </div>
-                            <span className="text-xs text-muted-foreground">考えています...</span>
+                            <span className="text-xs text-muted-foreground">Thinking...</span>
                           </div>
                         </CardContent>
                       </Card>
@@ -447,7 +454,7 @@ export default function Home() {
               <div className="border-t border-border p-4">
                 <form onSubmit={handleSendMessage} className="space-y-3">
                   <Textarea
-                    placeholder={`${currentAgent.name}にメッセージを送信...`}
+                    placeholder={`Send a message to ${currentAgent.name}...`}
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
                     onKeyDown={(e) => {
@@ -461,7 +468,7 @@ export default function Home() {
                   />
                   <div className="flex justify-between items-center">
                     <div className="text-xs text-muted-foreground">
-                      Shift + Enter で改行
+                      Shift + Enter for new line
                     </div>
                     <div className="flex items-center space-x-2">
                       {isLoading && (
@@ -471,14 +478,14 @@ export default function Home() {
                           size="sm"
                           onClick={handleStopStreaming}
                         >
-                          停止
+                          Stop
                         </Button>
                       )}
                       <Button
                         type="submit"
                         disabled={!messageInput.trim() || isLoading}
                       >
-                        {isLoading ? '送信中...' : '送信'}
+                        {isLoading ? 'Sending...' : 'Send'}
                       </Button>
                     </div>
                   </div>
@@ -492,9 +499,9 @@ export default function Home() {
                   <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
                     🤖
                   </div>
-                  <CardTitle>Cagent チャットへようこそ</CardTitle>
+                  <CardTitle>Welcome to Cagent Chat</CardTitle>
                   <CardDescription>
-                    AIエージェントを選択してチャットを開始しましょう
+                    Select an AI agent to start chatting
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -503,11 +510,11 @@ export default function Home() {
                       onClick={() => handleSelectAgent(agents[0])} 
                       className="w-full"
                     >
-                      {agents[0].name} を選択
+                      Select {agents[0].name}
                     </Button>
                   ) : (
                     <div className="text-center text-muted-foreground">
-                      エージェントがありません
+                      No agents available
                     </div>
                   )}
                 </CardContent>

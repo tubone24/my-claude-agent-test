@@ -186,6 +186,8 @@ export const useChatStore = create<ChatStore>()(
               sessions: [...state.sessions, newSession],
               currentSession: newSession,
               messages: [],
+              currentTokenUsage: null,
+              currentSessionTitle: null,
             }));
             return true;
           } else {

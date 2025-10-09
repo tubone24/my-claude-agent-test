@@ -5,8 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Cagent チャットUI',
-  description: 'DockerのCagent AIエージェントとのチャットインターフェース',
+  title: 'Cagent Chat Playground',
+  description: 'Docker Cagent Chat Playground',
 }
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ja" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <div className="min-h-screen bg-background text-foreground">
           {children}
