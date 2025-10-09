@@ -37,6 +37,7 @@ export default function Home() {
   const [messageInput, setMessageInput] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null)
+  const [isComposing, setIsComposing] = useState(false)
 
   useEffect(() => {
     const initialize = async () => {
@@ -597,8 +598,10 @@ export default function Home() {
                     placeholder={`Send a message to ${currentAgent.name}...`}
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
+                    onCompositionStart={() => setIsComposing(true)}
+                    onCompositionEnd={() => setIsComposing(false)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
+                      if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
                         e.preventDefault()
                         handleSendMessage(e)
                       }

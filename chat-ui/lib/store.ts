@@ -567,11 +567,14 @@ export const useChatStore = create<ChatStore>()(
                     break;
 
                   case 'stream_stopped':
+                    // ストリーミング終了 - ローディング状態を確実に解除
                     console.log('Stream stopped:', data);
                     streamingStopped = true;
-                    set({ 
+                    set({
                       isLoading: false,
-                      streamController: null 
+                      streamController: null,
+                      pendingToolApproval: false,
+                      currentToolCall: null
                     });
                     break;
 
