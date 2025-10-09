@@ -27,6 +27,7 @@ export default function Home() {
     setCurrentAgent,
     setCurrentSession,
     createSession,
+    deleteSession,
     sendMessage,
     stopStreaming,
     approveTools,
@@ -35,6 +36,7 @@ export default function Home() {
 
   const [messageInput, setMessageInput] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null)
 
   useEffect(() => {
     const initialize = async () => {
@@ -82,6 +84,28 @@ export default function Home() {
     if (!currentAgent) return
     // 新規セッションを作成（実用性のため自動承認）
     await createSession({ tools_approved: true })
+  }
+
+  const handleDeleteSession = async (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation() // カードのクリックイベントを防ぐ
+
+    if (deletingSessionId === sessionId) {
+      // 確認中の場合は実際に削除
+      const success = await deleteSession(sessionId)
+      if (success && currentAgent) {
+        // 削除後にセッション一覧を再読み込み
+        await loadSessionsByAgent(currentAgent.name)
+      }
+      setDeletingSessionId(null)
+    } else {
+      // 削除確認状態に設定
+      setDeletingSessionId(sessionId)
+    }
+  }
+
+  const handleCancelDelete = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setDeletingSessionId(null)
   }
 
   const handleStopStreaming = () => {
@@ -210,29 +234,63 @@ export default function Home() {
                       currentSession?.id === session.id
                         ? 'ring-2 ring-primary bg-primary/5'
                         : ''
-                    }`}
+                    } ${deletingSessionId === session.id ? 'ring-2 ring-red-500 bg-red-50' : ''}`}
                     onClick={() => handleSelectSession(session)}
                   >
                     <CardContent className="p-3">
-                      <div className="flex items-start justify-between">
-                        <div className="min-w-0 flex-1">
-                          <div className="font-medium text-sm truncate">
-                            {session.title || session.id}
+                      {deletingSessionId === session.id ? (
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-red-700 font-medium">
+                            削除しますか？
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {session.created_at || session.createdAt
-                              ? new Date(session.created_at || session.createdAt!).toLocaleDateString()
-                              : 'No date'}
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={handleCancelDelete}
+                              className="h-6 text-xs"
+                            >
+                              キャンセル
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={(e) => handleDeleteSession(session.id, e)}
+                              className="h-6 text-xs"
+                            >
+                              削除
+                            </Button>
                           </div>
                         </div>
-                        {currentSession?.id === session.id && (
-                          <div className="ml-2 flex-shrink-0">
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary text-white">
-                              Active
-                            </span>
+                      ) : (
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-sm truncate">
+                              {session.title || session.id}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {session.created_at || session.createdAt
+                                ? new Date(session.created_at || session.createdAt!).toLocaleDateString()
+                                : 'No date'}
+                            </div>
                           </div>
-                        )}
-                      </div>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            {currentSession?.id === session.id && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary text-white">
+                                Active
+                              </span>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => handleDeleteSession(session.id, e)}
+                              className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600"
+                            >
+                              🗑️
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
