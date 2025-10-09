@@ -6,13 +6,41 @@ A web-based chat UI for interacting with Cagent agents.
 
 ## Installation
 
+### macOS (Apple Silicon)
+
 ```bash
 curl -L -o cagent https://github.com/docker/cagent/releases/latest/download/cagent-darwin-arm64
-
 chmod +x cagent
-
 sudo mv cagent /usr/local/bin/
 ```
+
+### macOS (Intel)
+
+```bash
+curl -L -o cagent https://github.com/docker/cagent/releases/latest/download/cagent-darwin-amd64
+chmod +x cagent
+sudo mv cagent /usr/local/bin/
+```
+
+### Linux (x86_64)
+
+```bash
+curl -L -o cagent https://github.com/docker/cagent/releases/latest/download/cagent-linux-amd64
+chmod +x cagent
+sudo mv cagent /usr/local/bin/
+```
+
+### Linux (ARM64)
+
+```bash
+curl -L -o cagent https://github.com/docker/cagent/releases/latest/download/cagent-linux-arm64
+chmod +x cagent
+sudo mv cagent /usr/local/bin/
+```
+
+### Windows
+
+Download the latest release from [GitHub Releases](https://github.com/docker/cagent/releases/latest) and add the executable to your PATH.
 
 ## Usage
 
@@ -40,7 +68,7 @@ In a separate terminal, run:
 
 ```bash
 cd chat-ui
-npm install  # First time only
+npm install
 npm run dev
 ```
 
@@ -76,11 +104,23 @@ This Playground is a web-based chat UI for interacting with Cagent agents. It pr
 
 - **Tool Execution Visualization**: Dedicated UI for tool calls and their results
 
+  ![Tool Usage Info](docs/images/tool_usage_info.png)
+  *Tool usage information is displayed with automatic approval notice*
+
   ![Tool Output](docs/images/tool_output.png)
   *Tool execution results are displayed with special formatting*
 
-- **Token Usage Display**: Shows input/output token counts in the header
-- **Session Management**: Displays session titles
+  ![Tool Search](docs/images/tool_search.png)
+  *Example of search tool execution results with structured data*
+
+> [!WARNING]
+> Cagent does not currently support dynamic tool approval during execution. Therefore, this playground automatically approves tool usage when creating sessions (`tools_approved: true`). The tool usage information banner is displayed for informational purposes only.
+
+- **Token Usage Display & Session Management**: Shows input/output token counts and session titles in the header
+
+  ![Session Title and Token Usage](docs/images/session_title_token.png)
+  *Session title and token usage statistics are displayed in real-time*
+
 - **Streaming Control**: Ability to stop ongoing responses
 
 ## Deploy on Startup
