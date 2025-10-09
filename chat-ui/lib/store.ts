@@ -567,7 +567,6 @@ export const useChatStore = create<ChatStore>()(
                     break;
 
                   case 'stream_stopped':
-                    // ストリーミング終了 - ローディング状態を確実に解除
                     console.log('Stream stopped:', data);
                     streamingStopped = true;
                     set({ 
@@ -600,6 +599,19 @@ export const useChatStore = create<ChatStore>()(
                     console.log('Session title:', data);
                     if (data.title) {
                       set({ currentSessionTitle: data.title });
+
+                      // サイドバーのセッション一覧も更新
+                      const { currentSession, sessions } = get();
+                      if (currentSession) {
+                        set({
+                          sessions: sessions.map(s =>
+                            s.id === currentSession.id
+                              ? { ...s, title: data.title }
+                              : s
+                          ),
+                          currentSession: { ...currentSession, title: data.title }
+                        });
+                      }
                     }
                     // ストリーミング終了後はローディング状態を維持しない
                     if (streamingStopped) {

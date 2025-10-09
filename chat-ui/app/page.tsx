@@ -434,14 +434,18 @@ export default function Home() {
                     if (message.role === 'tool' && message.messageType === 'tool_result') {
                       // create_todosの場合は特別な表示
                       let todoList: any[] = [];
-                      if (message.toolName === 'create_todos' && message.toolCall?.function?.arguments) {
+                      let toolArguments: any = null;
+
+                      if (message.toolCall?.function?.arguments) {
                         try {
-                          const args = JSON.parse(message.toolCall.function.arguments);
-                          if (args.todos && Array.isArray(args.todos)) {
-                            todoList = args.todos;
+                          toolArguments = JSON.parse(message.toolCall.function.arguments);
+
+                          // create_todosの場合は特別な表示
+                          if (message.toolName === 'create_todos' && toolArguments.todos && Array.isArray(toolArguments.todos)) {
+                            todoList = toolArguments.todos;
                           }
                         } catch (e) {
-                          console.error('Failed to parse create_todos arguments:', e);
+                          console.error('Failed to parse tool arguments:', e);
                         }
                       }
 
@@ -458,6 +462,16 @@ export default function Home() {
                                     {message.toolName} execution result
                                   </span>
                                 </div>
+
+                                {/* ツール引数を表示 */}
+                                {toolArguments && (
+                                  <div className="mb-3 p-2 bg-blue-100 rounded border border-blue-200">
+                                    <div className="text-xs font-semibold text-blue-700 mb-1">Arguments:</div>
+                                    <pre className="whitespace-pre-wrap font-mono text-xs text-blue-900 overflow-x-auto">
+                                      {JSON.stringify(toolArguments, null, 2)}
+                                    </pre>
+                                  </div>
+                                )}
 
                                 {todoList.length > 0 ? (
                                   <div className="space-y-2">
