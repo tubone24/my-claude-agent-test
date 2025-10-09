@@ -192,7 +192,14 @@ export default function Home() {
                         🤖
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium text-sm">{agent.name}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium text-sm">{agent.name}</div>
+                          {agent.multi && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-700 border border-purple-200">
+                              Multi
+                            </span>
+                          )}
+                        </div>
                         <div className="text-xs text-muted-foreground line-clamp-1">
                           {agent.description || 'No description'}
                         </div>
@@ -341,7 +348,7 @@ export default function Home() {
             <div className="flex items-center space-x-3">
               {currentSessionTitle && (
                 <div className="text-sm text-muted-foreground">
-                    Session: "{currentSessionTitle}"
+                    Session: &quot;{currentSessionTitle}&quot;
                 </div>
               )}
               {currentTokenUsage && (
@@ -387,7 +394,7 @@ export default function Home() {
                         <div>
                           <h4 className="font-medium text-yellow-800">Tool Usage Information</h4>
                           <p className="text-sm text-yellow-600 mt-1">
-                            The agent is using "{currentToolCall?.function?.name || 'tool'}"
+                            The agent is using &quot;{currentToolCall?.function?.name || 'tool'}&quot;
                           </p>
                           <p className="text-xs text-yellow-500 mt-1">
                             Cagent operates with automatic approval. This is for informational purposes only.

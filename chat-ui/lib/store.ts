@@ -61,6 +61,10 @@ interface ChatStore {
   setPendingToolApproval: (pending: boolean, toolCall?: any) => void;
   approveTools: () => Promise<void>;
   denyTools: () => Promise<void>;
+
+  // YAML管理関連
+  getAgentYAML: (agentId: string) => Promise<string | null>;
+  updateAgentYAML: (agentId: string, yamlContent: string) => Promise<boolean>;
 }
 
 export const useChatStore = create<ChatStore>()(
@@ -237,7 +241,7 @@ export const useChatStore = create<ChatStore>()(
 
               for (const item of rawMessages) {
                 // Cagent APIのフォーマット: { agentName, agentFilename, message: { role, content, ... } }
-                const msg = item.message || item;
+                const msg = (item as any).message || item;
 
                 console.log('Processing message:', msg);
 
@@ -747,21 +751,62 @@ export const useChatStore = create<ChatStore>()(
       denyTools: async () => {
         const { currentSession, setPendingToolApproval, stopStreaming } = get();
         console.log('denyTools called, currentSession:', currentSession);
-        
+
         try {
           console.log('ツールが拒否されました。ストリーミングを停止します。');
           setPendingToolApproval(false, null);
-          
+
           // ストリーミングを停止してエージェント処理を中断
           stopStreaming();
-          
+
           // ユーザーにフィードバック
           set({ error: null }); // エラーメッセージをクリア
           console.log('Tools denied and streaming stopped successfully');
-          
+
         } catch (error) {
           console.error('Tool denial error:', error);
           set({ error: 'ツールの拒否中にエラーが発生しました' });
+        }
+      },
+
+      // YAML管理関連アクション
+      getAgentYAML: async (agentId: string) => {
+        try {
+          const result = await cagentAPI.getAgent(agentId);
+          if (result.success && result.data) {
+            // AgentConfigをYAML文字列に変換（簡易実装）
+            const yamlContent = JSON.stringify(result.data, null, 2);
+            return yamlContent;
+          } else {
+            set({ error: result.error || 'YAMLの読み込みに失敗しました' });
+            return null;
+          }
+        } catch (error) {
+          set({ error: 'YAMLの読み込み中にエラーが発生しました' });
+          return null;
+        }
+      },
+
+      updateAgentYAML: async (agentId: string, yamlContent: string) => {
+        try {
+          // YAML文字列をAgentConfigに変換（簡易実装）
+          const agentConfig = JSON.parse(yamlContent);
+
+          const result = await cagentAPI.updateAgent({
+            filename: agentId,
+            agent_config: agentConfig
+          });
+
+          if (result.success) {
+            await get().loadAgents(); // 更新後にリストを更新
+            return true;
+          } else {
+            set({ error: result.error || 'YAMLの更新に失敗しました' });
+            return false;
+          }
+        } catch (error) {
+          set({ error: 'YAMLの更新中にエラーが発生しました' });
+          return false;
         }
       },
     }),

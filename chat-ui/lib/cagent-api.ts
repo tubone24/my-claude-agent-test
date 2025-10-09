@@ -24,8 +24,8 @@ class StreamController {
     }
   }
 
-  get signal() {
-    return this._abortController?.signal || { aborted: this._aborted };
+  get signal(): AbortSignal | undefined {
+    return this._abortController?.signal;
   }
 
   abort() {
