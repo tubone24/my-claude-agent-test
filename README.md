@@ -1,10 +1,10 @@
-# Cagent Playground
+# Docker Cagent Playground
 
 A web-based chat UI for interacting with Cagent agents.
 
 ![Demo](docs/images/demo.gif)
 
-## Installation
+## Installation Docker Cagent
 
 ### macOS (Apple Silicon)
 
