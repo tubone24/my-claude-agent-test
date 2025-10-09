@@ -1,3 +1,9 @@
+# Cagent Playground
+
+A web-based chat UI for interacting with Cagent agents.
+
+![Demo](docs/images/demo.gif)
+
 ## Installation
 
 ```bash
@@ -59,26 +65,23 @@ This Playground is a web-based chat UI for interacting with Cagent agents. It pr
 - **Agent Switching**: Select and switch between agents (automatically creates a new session)
 - **Real-time Streaming**: Display agent responses in real-time
 - **Reasoning Visualization**: Separate display of agent reasoning and final choices
+
+  ![Thinking Output](docs/images/thinking_output.png)
+  *Agent's reasoning process is displayed separately*
+
 - **Markdown Support**: Messages are rendered in Markdown format (GFM supported)
+
+  ![Final Answer](docs/images/final_answer.png)
+  *Final answers are rendered with full markdown support*
+
 - **Tool Execution Visualization**: Dedicated UI for tool calls and their results
+
+  ![Tool Output](docs/images/tool_output.png)
+  *Tool execution results are displayed with special formatting*
+
 - **Token Usage Display**: Shows input/output token counts in the header
 - **Session Management**: Displays session titles
 - **Streaming Control**: Ability to stop ongoing responses
-
-#### Tech Stack
-
-- **Framework**: Next.js 14 (App Router)
-- **UI**: React + TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui
-- **State Management**: Zustand
-- **Markdown**: react-markdown + remark-gfm
-
-#### UI Components
-
-- `components/ui/`: Reusable UI components (Button, Card, Textarea, etc.)
-- `lib/store.ts`: State management with Zustand
-- `lib/cagent-api.ts`: Cagent API client
-- `lib/types.ts`: TypeScript type definitions
 
 ## Deploy on Startup
 
