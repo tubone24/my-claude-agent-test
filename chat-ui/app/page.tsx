@@ -59,10 +59,8 @@ export default function Home() {
 
   const handleSelectAgent = async (agent: any) => {
     setCurrentAgent(agent)
-    // エージェント選択時に自動でセッション作成（実用性のため自動承認）
-    if (!currentSession) {
-      await createSession({ tools_approved: true })
-    }
+    // エージェント切り替え時に常に新しいセッションを作成（実用性のため自動承認）
+    await createSession({ tools_approved: true })
   }
 
   const handleStopStreaming = () => {

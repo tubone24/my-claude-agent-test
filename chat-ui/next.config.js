@@ -2,9 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  experimental: {
-    appDir: true,
-  },
   env: {
     CAGENT_API_BASE_URL: process.env.CAGENT_API_BASE_URL || 'http://localhost:8080/api',
   },
