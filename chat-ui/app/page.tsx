@@ -11,6 +11,7 @@ import remarkGfm from 'remark-gfm'
 export default function Home() {
   const {
     agents,
+    sessions,
     currentAgent,
     currentSession,
     messages,
@@ -22,7 +23,9 @@ export default function Home() {
     currentSessionTitle,
     loadAgents,
     loadSessions,
+    loadSessionsByAgent,
     setCurrentAgent,
+    setCurrentSession,
     createSession,
     sendMessage,
     stopStreaming,
@@ -38,7 +41,7 @@ export default function Home() {
       await loadAgents()
       await loadSessions()
     }
-    
+
     initialize()
   }, [loadAgents, loadSessions])
 
@@ -64,9 +67,20 @@ export default function Home() {
         console.error('Error stopping streaming:', error)
       }
     }
-    
+
     setCurrentAgent(agent)
-    // エージェント切り替え時に常に新しいセッションを作成（実用性のため自動承認）
+    // エージェント切り替え時にそのエージェントのセッション一覧を読み込む
+    await loadSessionsByAgent(agent.name)
+  }
+
+  const handleSelectSession = async (session: any) => {
+    // セッションを選択して引き継ぐ
+    await setCurrentSession(session)
+  }
+
+  const handleNewSession = async () => {
+    if (!currentAgent) return
+    // 新規セッションを作成（実用性のため自動承認）
     await createSession({ tools_approved: true })
   }
 
@@ -134,36 +148,29 @@ export default function Home() {
           </div>
           
           {/* Agent list */}
-          <div className="space-y-3">
+          <div className="space-y-3 mb-4">
             <h3 className="text-sm font-medium text-muted-foreground">Agent</h3>
-            <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <div className="space-y-2 max-h-[200px] overflow-y-auto">
               {agents.map((agent) => (
                 <Card
                   key={agent.name}
                   className={`cursor-pointer transition-all hover:shadow-md ${
-                    currentAgent?.name === agent.name 
-                      ? 'ring-2 ring-primary bg-primary/5' 
+                    currentAgent?.name === agent.name
+                      ? 'ring-2 ring-primary bg-primary/5'
                       : ''
                   }`}
                   onClick={() => handleSelectAgent(agent)}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <CardContent className="p-3">
+                    <div className="flex items-start space-x-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-sm">
                         🤖
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="font-medium text-sm">{agent.name}</div>
-                        <div className="text-xs text-muted-foreground line-clamp-2">
+                        <div className="text-xs text-muted-foreground line-clamp-1">
                           {agent.description || 'No description'}
                         </div>
-                        {agent.multi && (
-                          <div className="mt-1">
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-secondary">
-                              Multi-Agent
-                            </span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -171,8 +178,8 @@ export default function Home() {
               ))}
               {agents.length === 0 && (
                 <Card>
-                  <CardContent className="p-6 text-center">
-                    <div className="text-muted-foreground">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-sm text-muted-foreground">
                       No agents found
                     </div>
                   </CardContent>
@@ -180,6 +187,67 @@ export default function Home() {
               )}
             </div>
           </div>
+
+          {/* Session list */}
+          {currentAgent && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground">Sessions</h3>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleNewSession}
+                  className="h-7 text-xs"
+                >
+                  + New
+                </Button>
+              </div>
+              <div className="space-y-2 max-h-[calc(100vh-400px)] overflow-y-auto">
+                {sessions.map((session) => (
+                  <Card
+                    key={session.id}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      currentSession?.id === session.id
+                        ? 'ring-2 ring-primary bg-primary/5'
+                        : ''
+                    }`}
+                    onClick={() => handleSelectSession(session)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-start justify-between">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-medium text-sm truncate">
+                            {session.title || session.id}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {session.created_at || session.createdAt
+                              ? new Date(session.created_at || session.createdAt!).toLocaleDateString()
+                              : 'No date'}
+                          </div>
+                        </div>
+                        {currentSession?.id === session.id && (
+                          <div className="ml-2 flex-shrink-0">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary text-white">
+                              Active
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                {sessions.length === 0 && (
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <div className="text-sm text-muted-foreground">
+                        No sessions
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

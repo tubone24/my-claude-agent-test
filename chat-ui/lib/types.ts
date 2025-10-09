@@ -42,8 +42,9 @@ export interface ToolsetConfig {
 
 export interface Session {
   id: string;
-  title: string;
-  createdAt: string;
+  title?: string;
+  created_at?: string;
+  createdAt?: string;
   numMessages?: number;
   inputTokens?: number;
   outputTokens?: number;

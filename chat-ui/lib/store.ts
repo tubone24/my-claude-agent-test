@@ -40,6 +40,7 @@ interface ChatStore {
 
   // セッション関連
   loadSessions: () => Promise<void>;
+  loadSessionsByAgent: (agentName: string) => Promise<void>;
   createSession: (request: CreateSessionRequest) => Promise<boolean>;
   setCurrentSession: (session: Session | null) => void;
   deleteSession: (id: string) => Promise<boolean>;
@@ -176,6 +177,22 @@ export const useChatStore = create<ChatStore>()(
         }
       },
 
+      loadSessionsByAgent: async (agentName: string) => {
+        try {
+          set({ isLoading: true, error: null });
+          const result = await cagentAPI.getSessionsByAgent(agentName);
+          if (result.success && result.data) {
+            set({ sessions: result.data });
+          } else {
+            set({ error: result.error || 'エージェント別セッションの読み込みに失敗しました' });
+          }
+        } catch (error) {
+          set({ error: 'エージェント別セッションの読み込み中にエラーが発生しました' });
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
       createSession: async (request) => {
         try {
           set({ isLoading: true, error: null });
@@ -204,15 +221,71 @@ export const useChatStore = create<ChatStore>()(
 
       setCurrentSession: async (session) => {
         set({ currentSession: session, messages: [] });
-        
+
         // セッションの詳細を読み込む
         if (session) {
           try {
             const result = await cagentAPI.getSession(session.id);
             if (result.success && result.data) {
-              set({ 
+              console.log('Session data loaded:', result.data);
+
+              // メッセージをCagent APIフォーマットからUI用に変換
+              const messages: Message[] = [];
+              const rawMessages = result.data.messages || [];
+
+              console.log('Raw messages:', rawMessages);
+
+              for (const item of rawMessages) {
+                // Cagent APIのフォーマット: { agentName, agentFilename, message: { role, content, ... } }
+                const msg = item.message || item;
+
+                console.log('Processing message:', msg);
+
+                if (msg.role) {
+                  let content = '';
+                  let contentParts: MessageContentPart[] = [];
+
+                  // assistantメッセージの場合、reasoning_contentとcontentを両方処理
+                  if (msg.role === 'assistant') {
+                    if (msg.reasoning_content) {
+                      contentParts.push({
+                        type: 'reasoning',
+                        content: msg.reasoning_content
+                      });
+                      content += msg.reasoning_content;
+                    }
+
+                    if (msg.content) {
+                      contentParts.push({
+                        type: 'choice',
+                        content: msg.content
+                      });
+                      content += msg.content;
+                    }
+                  }
+                  // その他のメッセージはcontentをそのまま使用
+                  else if (msg.content) {
+                    content = msg.content;
+                  }
+
+                  if (content || msg.role === 'tool') {
+                    messages.push({
+                      id: Date.now().toString() + Math.random(),
+                      role: msg.role,
+                      content: content,
+                      contentParts: contentParts.length > 0 ? contentParts : undefined,
+                      timestamp: msg.created_at || new Date().toISOString(),
+                      agentName: item.agentName || undefined,
+                    });
+                  }
+                }
+              }
+
+              console.log('Converted messages:', messages);
+
+              set({
                 currentSession: result.data,
-                messages: result.data.messages || []
+                messages: messages
               });
             }
           } catch (error) {
