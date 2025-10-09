@@ -452,9 +452,16 @@ export default function Home() {
 
                       return (
                         <div key={message.id || index} className="flex justify-start">
-                          <div className="flex items-start space-x-3 max-w-[80%]">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                              🔧
+                          <div className="flex items-start space-x-3 max-w-3xl">
+                            <div className="flex flex-col items-center flex-shrink-0 w-20">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                🔧
+                              </div>
+                              {message.agentName && (
+                                <div className="text-xs text-muted-foreground mt-1 text-center break-words overflow-wrap-anywhere">
+                                  {message.agentName}
+                                </div>
+                              )}
                             </div>
                             <Card className="bg-blue-50 border-blue-200">
                               <CardContent className="p-3">
@@ -510,14 +517,14 @@ export default function Home() {
                         key={message.id || index}
                         className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
-                        <div className="flex items-start space-x-3 max-w-[80%]">
+                        <div className="flex items-start space-x-3 max-w-3xl">
                           {message.role === 'assistant' && (
-                            <div className="flex flex-col items-center flex-shrink-0">
+                            <div className="flex flex-col items-center flex-shrink-0 w-20">
                               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                                 🤖
                               </div>
                               {message.agentName && (
-                                <div className="text-xs text-muted-foreground mt-1">
+                                <div className="text-xs text-muted-foreground mt-1 text-center break-words overflow-wrap-anywhere">
                                   {message.agentName}
                                 </div>
                               )}

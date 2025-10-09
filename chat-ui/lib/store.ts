@@ -269,14 +269,30 @@ export const useChatStore = create<ChatStore>()(
                   }
 
                   if (content || msg.role === 'tool') {
-                    messages.push({
+                    const message: Message = {
                       id: Date.now().toString() + Math.random(),
                       role: msg.role,
                       content: content,
                       contentParts: contentParts.length > 0 ? contentParts : undefined,
                       timestamp: msg.created_at || new Date().toISOString(),
                       agentName: item.agentName || undefined,
-                    });
+                    };
+
+                    // ツールメッセージの場合は追加のフィールドを設定
+                    if (msg.role === 'tool') {
+                      message.messageType = 'tool_result';
+                      message.toolName = msg.name || 'ツール';
+                      message.toolCall = msg.tool_call_id ? {
+                        id: msg.tool_call_id,
+                        type: 'function',
+                        function: {
+                          name: msg.name || '',
+                          arguments: ''
+                        }
+                      } : undefined;
+                    }
+
+                    messages.push(message);
                   }
                 }
               }
@@ -371,6 +387,21 @@ export const useChatStore = create<ChatStore>()(
 
           // reasoningからchoiceに切り替わる場合は新しいメッセージを作成
           if (lastPart && lastPart.type === 'reasoning' && type === 'choice') {
+            const newMessage: Message = {
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: content,
+              contentParts: [{ type, content }],
+              timestamp: new Date().toISOString(),
+              agentName: agentName,
+            };
+            return {
+              messages: [...state.messages, newMessage]
+            };
+          }
+
+          // エージェント名が変わった場合も新しいメッセージを作成
+          if (agentName && lastMessage.agentName && agentName !== lastMessage.agentName) {
             const newMessage: Message = {
               id: Date.now().toString(),
               role: 'assistant',
