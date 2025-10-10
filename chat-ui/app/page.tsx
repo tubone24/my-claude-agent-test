@@ -31,6 +31,7 @@ export default function Home() {
     sendMessage,
     stopStreaming,
     approveTools,
+    approveAllTools,
     denyTools
   } = useChatStore()
 
@@ -54,7 +55,7 @@ export default function Home() {
 
     if (!currentSession) {
       // セッションがない場合は作成（実用性のため自動承認）
-      await createSession({ tools_approved: true })
+      await createSession({ tools_approved: false })
     }
 
     await sendMessage(messageInput)
@@ -84,7 +85,7 @@ export default function Home() {
   const handleNewSession = async () => {
     if (!currentAgent) return
     // 新規セッションを作成（実用性のため自動承認）
-    await createSession({ tools_approved: true })
+    await createSession({ tools_approved: false })
   }
 
   const handleDeleteSession = async (sessionId: string, e: React.MouseEvent) => {
@@ -249,7 +250,7 @@ export default function Home() {
                       {deletingSessionId === session.id ? (
                         <div className="flex items-center justify-between">
                           <div className="text-sm text-red-700 font-medium">
-                            削除しますか？
+                              Delete?
                           </div>
                           <div className="flex items-center space-x-2">
                             <Button
@@ -258,7 +259,7 @@ export default function Home() {
                               onClick={handleCancelDelete}
                               className="h-6 text-xs"
                             >
-                              キャンセル
+                              Cancel
                             </Button>
                             <Button
                               size="sm"
@@ -266,7 +267,7 @@ export default function Home() {
                               onClick={(e) => handleDeleteSession(session.id, e)}
                               className="h-6 text-xs"
                             >
-                              削除
+                                Delete
                             </Button>
                           </div>
                         </div>
@@ -356,15 +357,6 @@ export default function Home() {
                   Input: {currentTokenUsage.input_tokens || 0} | Output: {currentTokenUsage.output_tokens || 0}
                 </div>
               )}
-              {isLoading && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleStopStreaming}
-                >
-                  Stop
-                </Button>
-              )}
             </div>
           </div>
         </header>
@@ -388,38 +380,96 @@ export default function Home() {
 
                 {/* Tool Approval Banner */}
                 {pendingToolApproval && (
-                  <Card className="border-yellow-200 bg-yellow-50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium text-yellow-800">Tool Usage Information</h4>
-                          <p className="text-sm text-yellow-600 mt-1">
-                            The agent is using &quot;{currentToolCall?.function?.name || 'tool'}&quot;
-                          </p>
-                          <p className="text-xs text-yellow-500 mt-1">
-                            Cagent operates with automatic approval. This is for informational purposes only.
-                          </p>
-                          {currentToolCall?.function?.arguments && (
-                            <p className="text-xs text-yellow-500 mt-1 font-mono">
-                              Args: {currentToolCall.function.arguments}
+                  currentToolCall?.function?.name === 'transfer_task' ? (
+                    // transfer_taskの場合は通知のみ
+                    <Card className="border-blue-200 bg-blue-50">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-blue-800">エージェント切り替え</h4>
+                            <p className="text-sm text-blue-600 mt-1">
+                              サブエージェントまたは親エージェントに切り替えます
                             </p>
-                          )}
+                            {currentToolCall?.function?.arguments && (
+                              <div className="mt-2 p-2 bg-blue-100 rounded border border-blue-200">
+                                <p className="text-xs text-blue-700 font-semibold mb-1">切り替え情報:</p>
+                                <p className="text-xs text-blue-600 font-mono break-all">
+                                  {currentToolCall.function.arguments}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-shrink-0">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                console.log('Acknowledging agent transfer...');
+                                approveTools();
+                              }}
+                              className="bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap"
+                            >
+                              OK
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              console.log('Closing tool info banner...');
-                              approveTools();
-                            }}
-                            className="bg-blue-600 text-white hover:bg-blue-700"
-                          >
-                            OK
-                          </Button>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    // 通常のツールの場合は承認UI
+                    <Card className="border-yellow-200 bg-yellow-50">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-yellow-800">ツールの使用を承認しますか？</h4>
+                            <p className="text-sm text-yellow-600 mt-1">
+                              エージェントが &quot;{currentToolCall?.function?.name || 'tool'}&quot; を使用しようとしています
+                            </p>
+                            {currentToolCall?.function?.arguments && (
+                              <div className="mt-2 p-2 bg-yellow-100 rounded border border-yellow-200">
+                                <p className="text-xs text-yellow-700 font-semibold mb-1">引数:</p>
+                                <p className="text-xs text-yellow-600 font-mono break-all">
+                                  {currentToolCall.function.arguments}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col space-y-2 flex-shrink-0">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                console.log('Approving current tool only...');
+                                approveTools();
+                              }}
+                              className="bg-green-600 text-white hover:bg-green-700 whitespace-nowrap"
+                            >
+                              Yes（今回のみ）
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                console.log('Approving all tools for this session...');
+                                approveAllTools();
+                              }}
+                              className="bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap"
+                            >
+                              全許可
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => {
+                                console.log('Denying tool usage...');
+                                denyTools();
+                              }}
+                              className="whitespace-nowrap"
+                            >
+                              No
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  )
                 )}
 
                 {messages.length === 0 ? (

@@ -60,6 +60,7 @@ interface ChatStore {
   // ツール承認関連
   setPendingToolApproval: (pending: boolean, toolCall?: any) => void;
   approveTools: () => Promise<void>;
+  approveAllTools: () => Promise<void>;
   denyTools: () => Promise<void>;
 
   // YAML管理関連
@@ -537,6 +538,14 @@ export const useChatStore = create<ChatStore>()(
                     
                     // フォールバック: もしtool_call_confirmationが来ない場合のための検出
                     if (data.tool_call && data.tool_call.function) {
+                      const toolName = data.tool_call.function.name;
+                      
+                      // 承認不要なツール（transfer_task, create_todos）はスキップ
+                      if (toolName === 'transfer_task' || toolName === 'create_todos') {
+                        console.log(`Skipping approval for ${toolName} - no confirmation needed`);
+                        break;
+                      }
+                      
                       console.log('Detected tool call via partial_tool_call event');
                       const { pendingToolApproval, setPendingToolApproval } = get();
                       
@@ -549,12 +558,22 @@ export const useChatStore = create<ChatStore>()(
                     break;
                     
                   case 'tool_call_confirmation':
-                    // ツール呼び出しが確認された - 手動承認が必要
-                    console.log('🔧 Tool call confirmed - showing approval banner:', data);
+                    // ツール呼び出しが確認された
+                    console.log('🔧 Tool call confirmed:', data);
                     
                     if (data.tool_call) {
-                      const { setPendingToolApproval } = get();
-                      console.log('Setting pending tool approval to true');
+                      const { currentSession, setPendingToolApproval } = get();
+                      
+                      // セッションのtools_approved状態を確認
+                      if (currentSession?.tools_approved === true) {
+                        // 全許可済みの場合は自動承認（承認バナーを表示しない）
+                        console.log('Session has tools_approved=true, auto-approving...');
+                        // 自動承認はサーバー側で処理されるため、クライアント側では何もしない
+                        break;
+                      }
+                      
+                      // tools_approved=falseの場合のみ承認バナーを表示
+                      console.log('Showing approval banner for tool:', data.tool_call.function?.name);
                       setPendingToolApproval(true, data.tool_call);
                       
                       // 追加のデバッグ情報
@@ -593,7 +612,7 @@ export const useChatStore = create<ChatStore>()(
                         content: data.response,
                         timestamp: new Date().toISOString(),
                         messageType: 'tool_result',
-                        toolName: data.tool_call?.function?.name || 'ツール',
+                        toolName: data.tool_call?.function?.name || 'tool',
                         toolCall: data.tool_call,
                         agentName: data.agent_name,
                       };
@@ -730,21 +749,65 @@ export const useChatStore = create<ChatStore>()(
         const { currentSession, setPendingToolApproval } = get();
         console.log('approveTools called, currentSession:', currentSession);
         
+        if (!currentSession) {
+          console.error('No current session found');
+          set({ error: 'セッションが見つかりません' });
+          return;
+        }
+        
         try {
-          console.log('Cagentの制限により、実際のAPI呼び出しは行いません');
-          console.log('代わりに承認バナーを非表示にして処理を続行します');
+          console.log('Calling resumeSession API with approve');
+          const result = await cagentAPI.resumeSession(currentSession.id, 'approve');
           
-          // 承認バナーを非表示にして処理を続行
-          setPendingToolApproval(false, null);
-          
-          console.log('Tools approved (UI only) - streaming will continue');
-          
-          // 実際にはCagentでは動的承認ができないため、
-          // セッション作成時の設定に依存します
-          
+          if (result.success) {
+            // 承認バナーを非表示にして処理を続行
+            setPendingToolApproval(false, null);
+            console.log('Tool approved successfully - streaming will continue');
+          } else {
+            console.error('Failed to approve tool:', result.error);
+            set({ error: result.error || 'ツールの承認に失敗しました' });
+          }
         } catch (error) {
           console.error('Tool approval error:', error);
           set({ error: 'ツールの承認中にエラーが発生しました' });
+        }
+      },
+
+      approveAllTools: async () => {
+        const { currentSession, setPendingToolApproval } = get();
+        console.log('approveAllTools called, currentSession:', currentSession);
+        
+        if (!currentSession) {
+          console.error('No current session found');
+          set({ error: 'セッションが見つかりません' });
+          return;
+        }
+        
+        try {
+          console.log('Calling resumeSession API with approve-session');
+          const result = await cagentAPI.resumeSession(currentSession.id, 'approve-session');
+          
+          if (result.success) {
+            // セッションのtools_approvedをtrueに更新
+            const updatedSession = { ...currentSession, tools_approved: true };
+            
+            set({
+              currentSession: updatedSession,
+              sessions: get().sessions.map(s => 
+                s.id === currentSession.id ? updatedSession : s
+              )
+            });
+            
+            // 承認バナーを非表示にして処理を続行
+            setPendingToolApproval(false, null);
+            console.log('All tools approved for this session - no more confirmations needed');
+          } else {
+            console.error('Failed to approve all tools:', result.error);
+            set({ error: result.error || 'ツールの全許可に失敗しました' });
+          }
+        } catch (error) {
+          console.error('Tool approval error:', error);
+          set({ error: 'ツールの全許可中にエラーが発生しました' });
         }
       },
 
@@ -752,9 +815,23 @@ export const useChatStore = create<ChatStore>()(
         const { currentSession, setPendingToolApproval, stopStreaming } = get();
         console.log('denyTools called, currentSession:', currentSession);
 
+        if (!currentSession) {
+          console.error('No current session found');
+          set({ error: 'セッションが見つかりません' });
+          return;
+        }
+
         try {
-          console.log('ツールが拒否されました。ストリーミングを停止します。');
-          setPendingToolApproval(false, null);
+          console.log('Calling resumeSession API with reject');
+          const result = await cagentAPI.resumeSession(currentSession.id, 'reject');
+          
+          if (result.success) {
+            // 承認バナーを非表示
+            setPendingToolApproval(false, null);
+            console.log('Tool rejected successfully');
+          } else {
+            console.error('Failed to reject tool:', result.error);
+          }
 
           // ストリーミングを停止してエージェント処理を中断
           stopStreaming();

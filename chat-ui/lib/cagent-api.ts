@@ -196,10 +196,12 @@ class CagentAPI {
     });
   }
 
-  async resumeSession(id: string): Promise<APIResponse<{ message: string }>> {
+  async resumeSession(id: string, resumeType: 'approve' | 'approve-session' | 'reject' = 'approve'): Promise<APIResponse<{ message: string }>> {
     return this.request(`/sessions/${encodeURIComponent(id)}/resume`, {
       method: 'POST',
-      body: JSON.stringify({ confirmation: true }),
+      body: JSON.stringify({ 
+        confirmation: resumeType
+      }),
     });
   }
 
