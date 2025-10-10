@@ -633,13 +633,38 @@ export const useChatStore = create<ChatStore>()(
                     break;
 
                   case 'token_usage':
-                    // トークン使用量を保存
+                    // トークン使用量を保存（差分を累積）
                     console.log('Token usage:', data);
                     if (data.usage) {
+                      const { currentTokenUsage, messages } = get();
+                      
+                      // 今回消費したトークン数（差分）
+                      const inputTokensDelta = data.usage.input_tokens || 0;
+                      const outputTokensDelta = data.usage.output_tokens || 0;
+                      
+                      // 累積値を計算
+                      const totalInputTokens = (currentTokenUsage?.input_tokens || 0) + inputTokensDelta;
+                      const totalOutputTokens = (currentTokenUsage?.output_tokens || 0) + outputTokensDelta;
+                      
+                      // 最後のアシスタントメッセージに差分を記録
+                      const updatedMessages = messages.map((msg, index) => {
+                        if (index === messages.length - 1 && msg.role === 'assistant') {
+                          return {
+                            ...msg,
+                            tokens: {
+                              input: inputTokensDelta,
+                              output: outputTokensDelta
+                            }
+                          };
+                        }
+                        return msg;
+                      });
+                      
                       set({
+                        messages: updatedMessages,
                         currentTokenUsage: {
-                          input_tokens: data.usage.input_tokens,
-                          output_tokens: data.usage.output_tokens,
+                          input_tokens: totalInputTokens,
+                          output_tokens: totalOutputTokens,
                           context_length: data.usage.context_length
                         }
                       });

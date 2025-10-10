@@ -562,8 +562,13 @@ export default function Home() {
                                   </pre>
                                 )}
 
-                                <div className="text-xs opacity-70 mt-2 text-blue-600">
-                                  {new Date(message.timestamp).toLocaleTimeString()}
+                                <div className="text-xs opacity-70 mt-2 text-blue-600 flex items-center gap-2">
+                                  <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
+                                  {message.tokens && (message.tokens.input || message.tokens.output) && (
+                                    <span>
+                                      • Input: {message.tokens.input || 0} | Output: {message.tokens.output || 0}
+                                    </span>
+                                  )}
                                 </div>
                               </CardContent>
                             </Card>
@@ -619,8 +624,13 @@ export default function Home() {
                                   {message.content}
                                 </pre>
                               )}
-                              <div className="text-xs opacity-70 mt-2">
-                                {new Date(message.timestamp).toLocaleTimeString()}
+                              <div className="text-xs opacity-70 mt-2 flex items-center gap-2">
+                                <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
+                                {message.tokens && (message.tokens.input || message.tokens.output) && (
+                                  <span className={message.role === 'user' ? 'opacity-70' : 'text-muted-foreground'}>
+                                    • Input: {message.tokens.input || 0} | Output: {message.tokens.output || 0}
+                                  </span>
+                                )}
                               </div>
                             </CardContent>
                           </Card>
