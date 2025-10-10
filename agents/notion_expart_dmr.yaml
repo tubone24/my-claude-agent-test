@@ -1,0 +1,20 @@
+#!/usr/bin/env cagent run
+version: "2"
+
+agents:
+  root:
+    model: qwen
+    description: Notion Expert
+    instruction: You are an AI assistant with expertise in the Notion project's documentation.
+    toolsets:
+      - type: mcp
+        remote:
+          url: https://mcp.notion.com/sse
+          transport_type: sse
+
+models:
+  qwen:
+    provider: dmr
+    model: ai/qwen3
+    # base_url defaults to http://localhost:12434/engines/llama.cpp/v1
+    # use http://model-runner.docker

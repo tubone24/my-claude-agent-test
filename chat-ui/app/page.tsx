@@ -362,12 +362,11 @@ export default function Home() {
         </header>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {currentAgent ? (
             <>
-              {/* Message Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {/* Debug information */}
+              {/* Debug information - Fixed */}
+              <div className="flex-shrink-0 p-4 pb-0">
                 <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded border">
                   <div>Session: {currentSession?.id || 'None'}</div>
                   <div>Agent: {currentAgent?.name || 'None'}</div>
@@ -377,10 +376,12 @@ export default function Home() {
                     <div>Tool Call: {currentToolCall.function?.name} | Args: {currentToolCall.function?.arguments}</div>
                   )}
                 </div>
+              </div>
 
-                {/* Tool Approval Banner */}
-                {pendingToolApproval && (
-                  currentToolCall?.function?.name === 'transfer_task' ? (
+              {/* Tool Approval Banner - Fixed */}
+              {pendingToolApproval && (
+                <div className="flex-shrink-0 px-4 pt-4">
+                  {currentToolCall?.function?.name === 'transfer_task' ? (
                     // transfer_taskの場合は通知のみ
                     <Card className="border-blue-200 bg-blue-50">
                       <CardContent className="p-4">
@@ -469,9 +470,12 @@ export default function Home() {
                         </div>
                       </CardContent>
                     </Card>
-                  )
-                )}
+                  )}
+                </div>
+              )}
 
+              {/* Message Area - Scrollable */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
                     <Card className="max-w-md">
