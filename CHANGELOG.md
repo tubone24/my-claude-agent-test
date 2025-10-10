@@ -96,9 +96,8 @@ This project is a web-based chat UI for interacting with Docker Cagent agents. I
 ## Roadmap
 
 - [ ] Add version tags and release management
-- [ ] Further UI/UX improvements
-- [ ] Performance optimization
-- [ ] Additional internationalization support
+- [ ] Copy and paste button
+- [ ] Debuging mode
 
 ---
 
