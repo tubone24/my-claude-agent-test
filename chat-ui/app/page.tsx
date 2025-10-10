@@ -64,7 +64,7 @@ export default function Home() {
     if (!messageInput.trim() || !currentAgent) return
 
     if (!currentSession) {
-      // セッションがない場合は作成（実用性のため自動承認）
+      // Create session if none exists (auto-approve for convenience)
       await createSession({ tools_approved: false })
     }
 
@@ -73,7 +73,7 @@ export default function Home() {
   }
 
   const handleSelectAgent = async (agent: any) => {
-    // ストリーミング中の場合は強制停止
+    // Force stop if streaming
     if (isLoading) {
       try {
         stopStreaming()
@@ -83,34 +83,34 @@ export default function Home() {
     }
 
     setCurrentAgent(agent)
-    // エージェント切り替え時にそのエージェントのセッション一覧を読み込む
+    // Load sessions for the selected agent
     await loadSessionsByAgent(agent.name)
   }
 
   const handleSelectSession = async (session: any) => {
-    // セッションを選択して引き継ぐ
+    // Select and continue the session
     await setCurrentSession(session)
   }
 
   const handleNewSession = async () => {
     if (!currentAgent) return
-    // 新規セッションを作成（実用性のため自動承認）
+    // Create new session (auto-approve for convenience)
     await createSession({ tools_approved: false })
   }
 
   const handleDeleteSession = async (sessionId: string, e: React.MouseEvent) => {
-    e.stopPropagation() // カードのクリックイベントを防ぐ
+    e.stopPropagation() // Prevent card click event
 
     if (deletingSessionId === sessionId) {
-      // 確認中の場合は実際に削除
+      // Actually delete if confirming
       const success = await deleteSession(sessionId)
       if (success && currentAgent) {
-        // 削除後にセッション一覧を再読み込み
+        // Reload session list after deletion
         await loadSessionsByAgent(currentAgent.name)
       }
       setDeletingSessionId(null)
     } else {
-      // 削除確認状態に設定
+      // Set to delete confirmation state
       setDeletingSessionId(sessionId)
     }
   }
@@ -129,7 +129,7 @@ export default function Home() {
   }
 
   const handleOpenYAMLEditor = (agent: any, e: React.MouseEvent) => {
-    e.stopPropagation() // エージェント選択を防ぐ
+    e.stopPropagation() // Prevent agent selection
     setEditingAgent({ id: agent.name, name: agent.name })
     setYamlEditorOpen(true)
   }
@@ -180,7 +180,7 @@ export default function Home() {
 
   return (
     <>
-      {/* YAMLエディタダイアログ */}
+      {/* YAML Editor Dialog */}
       {editingAgent && (
         <YAMLEditorDialog
           agentId={editingAgent.id}
@@ -241,7 +241,7 @@ export default function Home() {
                             variant="ghost"
                             onClick={(e) => handleOpenYAMLEditor(agent, e)}
                             className="h-6 w-6 p-0 hover:bg-blue-100 hover:text-blue-600 flex-shrink-0"
-                            title="YAML設定を編集"
+                            title="Edit YAML configuration"
                           >
                             📝
                           </Button>
@@ -428,18 +428,18 @@ export default function Home() {
               {pendingToolApproval && (
                 <div className="flex-shrink-0 px-4 pt-4">
                   {currentToolCall?.function?.name === 'transfer_task' ? (
-                    // transfer_taskの場合は通知のみ
+                    // Notification only for transfer_task
                     <Card className="border-blue-200 bg-blue-50">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <h4 className="font-medium text-blue-800">エージェント切り替え</h4>
+                            <h4 className="font-medium text-blue-800">Agent Transfer</h4>
                             <p className="text-sm text-blue-600 mt-1">
-                              サブエージェントまたは親エージェントに切り替えます
+                              Transferring to sub-agent or parent agent
                             </p>
                             {currentToolCall?.function?.arguments && (
                               <div className="mt-2 p-2 bg-blue-100 rounded border border-blue-200">
-                                <p className="text-xs text-blue-700 font-semibold mb-1">切り替え情報:</p>
+                                <p className="text-xs text-blue-700 font-semibold mb-1">Transfer Info:</p>
                                 <p className="text-xs text-blue-600 font-mono break-all">
                                   {currentToolCall.function.arguments}
                                 </p>
@@ -462,18 +462,18 @@ export default function Home() {
                       </CardContent>
                     </Card>
                   ) : (
-                    // 通常のツールの場合は承認UI
+                    // Approval UI for regular tools
                     <Card className="border-yellow-200 bg-yellow-50">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <h4 className="font-medium text-yellow-800">ツールの使用を承認しますか？</h4>
+                            <h4 className="font-medium text-yellow-800">Approve Tool Usage?</h4>
                             <p className="text-sm text-yellow-600 mt-1">
-                              エージェントが &quot;{currentToolCall?.function?.name || 'tool'}&quot; を使用しようとしています
+                              Agent is attempting to use &quot;{currentToolCall?.function?.name || 'tool'}&quot;
                             </p>
                             {currentToolCall?.function?.arguments && (
                               <div className="mt-2 p-2 bg-yellow-100 rounded border border-yellow-200">
-                                <p className="text-xs text-yellow-700 font-semibold mb-1">引数:</p>
+                                <p className="text-xs text-yellow-700 font-semibold mb-1">Arguments:</p>
                                 <p className="text-xs text-yellow-600 font-mono break-all">
                                   {currentToolCall.function.arguments}
                                 </p>
@@ -489,7 +489,7 @@ export default function Home() {
                               }}
                               className="bg-green-600 text-white hover:bg-green-700 whitespace-nowrap"
                             >
-                              Yes（今回のみ）
+                              Yes（）
                             </Button>
                             <Button
                               size="sm"
@@ -499,7 +499,7 @@ export default function Home() {
                               }}
                               className="bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap"
                             >
-                              全許可
+                              All Accepted
                             </Button>
                             <Button
                               size="sm"
@@ -527,12 +527,12 @@ export default function Home() {
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <h4 className="font-medium text-green-800">OAuth認証が必要です</h4>
+                          <h4 className="font-medium text-green-800">OAuth Authentication Required</h4>
                           <p className="text-sm text-green-600 mt-1">
                             {currentOAuthRequest.message}
                           </p>
                           <div className="mt-2 p-2 bg-green-100 rounded border border-green-200">
-                            <p className="text-xs text-green-700 font-semibold mb-1">サーバー:</p>
+                            <p className="text-xs text-green-700 font-semibold mb-1">Server:</p>
                             <p className="text-xs text-green-600 font-mono break-all">
                               {currentOAuthRequest.serverUrl}
                             </p>
@@ -547,7 +547,7 @@ export default function Home() {
                             }}
                             className="bg-green-600 text-white hover:bg-green-700 whitespace-nowrap"
                           >
-                            承認
+                            Approve
                           </Button>
                           <Button
                             size="sm"
@@ -558,7 +558,7 @@ export default function Home() {
                             }}
                             className="whitespace-nowrap"
                           >
-                            拒否
+                            Deny
                           </Button>
                         </div>
                       </div>

@@ -90,6 +90,10 @@ This Playground is a web-based chat UI for interacting with Cagent agents. It pr
 #### Main Features
 
 - **Agent List Display**: View available agents in the sidebar
+
+  ![Agent List](docs/images/agent_list.png)
+  *Agent list with descriptions and multi-agent support indicators*
+
 - **Agent Switching**: Select and switch between agents (automatically creates a new session)
 - **Real-time Streaming**: Display agent responses in real-time
 - **Reasoning Visualization**: Separate display of agent reasoning and final choices
@@ -119,6 +123,16 @@ This Playground is a web-based chat UI for interacting with Cagent agents. It pr
   *Session title and token usage statistics are displayed in real-time*
 
 - **Streaming Control**: Ability to stop ongoing responses
+
+- **YAML Editor**: Edit agent configuration files directly from the UI
+
+  ![YAML Editor](docs/images/yaml_editor.png)
+  *Built-in YAML editor with syntax highlighting for agent configuration*
+
+- **Tool & Remote MCP Server Approval**: Security feature for controlling tool execution and remote MCP server access
+  - Approve or deny tool calls before execution
+  - Manage remote MCP server connections with user approval
+  - Helps prevent unauthorized operations and ensures user control over agent actions
 
 ## Deploy on Startup
 

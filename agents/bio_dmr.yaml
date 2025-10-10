@@ -13,7 +13,7 @@ agents:
     model: qwen
     description: Create a biography of the user based on internet searches.
     instruction: |
-      Your goal is to present the user with a concise and informative biography based on their online presence.
+      Your goal is to present the user with a concise and informative biography based on their online presence!
 
       * As soon as the user provides their name, start collecting information about them.
       * Use a combination of web searches and specific URL fetches to gather relevant data.
