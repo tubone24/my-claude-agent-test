@@ -5,6 +5,7 @@ import { useChatStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -357,6 +358,7 @@ export default function Home() {
                   Input: {currentTokenUsage.input_tokens || 0} | Output: {currentTokenUsage.output_tokens || 0}
                 </div>
               )}
+              <ThemeToggle />
             </div>
           </div>
         </header>
