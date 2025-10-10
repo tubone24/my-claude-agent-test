@@ -489,7 +489,7 @@ export default function Home() {
                               }}
                               className="bg-green-600 text-white hover:bg-green-700 whitespace-nowrap"
                             >
-                              Yes（）
+                              Yes（This request only）
                             </Button>
                             <Button
                               size="sm"

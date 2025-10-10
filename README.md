@@ -108,9 +108,6 @@ This Playground is a web-based chat UI for interacting with Cagent agents. It pr
 
 - **Tool Execution Visualization**: Dedicated UI for tool calls and their results
 
-  ![Tool Usage Info](docs/images/tool_usage_info.png)
-  *Tool usage information is displayed with automatic approval notice*
-
   ![Tool Output](docs/images/tool_output.png)
   *Tool execution results are displayed with special formatting*
 
@@ -133,6 +130,12 @@ This Playground is a web-based chat UI for interacting with Cagent agents. It pr
   - Approve or deny tool calls before execution
   - Manage remote MCP server connections with user approval
   - Helps prevent unauthorized operations and ensures user control over agent actions
+
+  ![Tool Approval](docs/images/tool_approval.png)
+  *Tool approval dialog showing tool name, arguments, and approval options*
+
+  ![Remote MCP Server Approval](docs/images/remote_mcp.png)
+  *OAuth authentication approval for remote MCP server connections*
 
 ## Deploy on Startup
 

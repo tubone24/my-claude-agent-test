@@ -14,7 +14,7 @@ import {
 } from './types';
 
 interface ChatStore {
-  // 状態
+  // State
   sessions: Session[];
   agents: Agent[];
   currentSession: Session | null;
@@ -22,7 +22,7 @@ interface ChatStore {
   messages: Message[];
   isLoading: boolean;
   error: string | null;
-  streamController: any | null; // StreamController または AbortController
+  streamController: any | null; // StreamController or AbortController
   pendingToolApproval: boolean;
   currentToolCall: any | null;
   currentTokenUsage: { input_tokens?: number; output_tokens?: number; context_length?: number } | null;
@@ -30,25 +30,25 @@ interface ChatStore {
   pendingOAuthAuth: boolean;
   currentOAuthRequest: OAuthAuthorizationRequest | null;
 
-  // アクション
+  // Actions
   setError: (error: string | null) => void;
   setLoading: (loading: boolean) => void;
 
-  // エージェント関連
+  // Agent-related
   loadAgents: () => Promise<void>;
   createAgent: (agent: CreateAgentRequest) => Promise<boolean>;
   updateAgent: (agent: UpdateAgentRequest) => Promise<boolean>;
   deleteAgent: (filePath: string) => Promise<boolean>;
   setCurrentAgent: (agent: Agent | null) => void;
 
-  // セッション関連
+  // Session-related
   loadSessions: () => Promise<void>;
   loadSessionsByAgent: (agentName: string) => Promise<void>;
   createSession: (request: CreateSessionRequest) => Promise<boolean>;
   setCurrentSession: (session: Session | null) => void;
   deleteSession: (id: string) => Promise<boolean>;
 
-  // メッセージ関連
+  // Message-related
   addMessage: (message: Message) => void;
   updateLastMessage: (content: string) => void;
   appendToLastMessage: (content: string) => void;
@@ -56,22 +56,22 @@ interface ChatStore {
   sendMessage: (content: string) => Promise<void>;
   clearMessages: () => void;
 
-  // ストリーミング関連
+  // Streaming-related
   startStreaming: (sessionId: string, agentName: string, message: string) => void;
   stopStreaming: () => void;
 
-  // ツール承認関連
+  // Tool approval-related
   setPendingToolApproval: (pending: boolean, toolCall?: any) => void;
   approveTools: () => Promise<void>;
   approveAllTools: () => Promise<void>;
   denyTools: () => Promise<void>;
 
-  // OAuth認証関連
+  // OAuth authentication-related
   setPendingOAuthAuth: (pending: boolean, oauthRequest?: OAuthAuthorizationRequest) => void;
   approveOAuth: () => Promise<void>;
   denyOAuth: () => Promise<void>;
 
-  // YAML管理関連
+  // YAML management-related
   getAgentYAML: (agentId: string) => Promise<string | null>;
   updateAgentYAML: (agentId: string, yamlContent: string) => Promise<boolean>;
 }
@@ -79,7 +79,7 @@ interface ChatStore {
 export const useChatStore = create<ChatStore>()(
   devtools(
     (set, get) => ({
-      // 初期状態
+      // Initial state
       sessions: [],
       agents: [],
       currentSession: null,
@@ -95,11 +95,11 @@ export const useChatStore = create<ChatStore>()(
       pendingOAuthAuth: false,
       currentOAuthRequest: null,
 
-      // 基本アクション
+      // Basic actions
       setError: (error) => set({ error }),
       setLoading: (loading) => set({ isLoading: loading }),
 
-      // エージェント関連アクション
+      // Agent-related actions
       loadAgents: async () => {
         try {
           set({ isLoading: true, error: null });
@@ -107,10 +107,10 @@ export const useChatStore = create<ChatStore>()(
           if (result.success && result.data) {
             set({ agents: result.data });
           } else {
-            set({ error: result.error || 'エージェントの読み込みに失敗しました' });
+            set({ error: result.error || 'Failed to load agents' });
           }
         } catch (error) {
-          set({ error: 'エージェントの読み込み中にエラーが発生しました' });
+          set({ error: 'An error occurred while loading agents' });
         } finally {
           set({ isLoading: false });
         }
@@ -121,14 +121,14 @@ export const useChatStore = create<ChatStore>()(
           set({ isLoading: true, error: null });
           const result = await cagentAPI.createAgent(agent);
           if (result.success) {
-            await get().loadAgents(); // 作成後にリストを更新
+            await get().loadAgents(); // Refresh list after creation
             return true;
           } else {
-            set({ error: result.error || 'エージェントの作成に失敗しました' });
+            set({ error: result.error || 'Failed to create agent' });
             return false;
           }
         } catch (error) {
-          set({ error: 'エージェントの作成中にエラーが発生しました' });
+          set({ error: 'An error occurred while creating agent' });
           return false;
         } finally {
           set({ isLoading: false });
@@ -140,14 +140,14 @@ export const useChatStore = create<ChatStore>()(
           set({ isLoading: true, error: null });
           const result = await cagentAPI.updateAgent(agent);
           if (result.success) {
-            await get().loadAgents(); // 更新後にリストを更新
+            await get().loadAgents(); // Refresh list after update
             return true;
           } else {
-            set({ error: result.error || 'エージェントの更新に失敗しました' });
+            set({ error: result.error || 'Failed to update agent' });
             return false;
           }
         } catch (error) {
-          set({ error: 'エージェントの更新中にエラーが発生しました' });
+          set({ error: 'An error occurred while updating agent' });
           return false;
         } finally {
           set({ isLoading: false });
@@ -159,21 +159,21 @@ export const useChatStore = create<ChatStore>()(
           set({ isLoading: true, error: null });
           const result = await cagentAPI.deleteAgent({ file_path: filePath });
           if (result.success) {
-            await get().loadAgents(); // 削除後にリストを更新
+            await get().loadAgents(); // Refresh list after deletion
             return true;
           } else {
-            set({ error: result.error || 'エージェントの削除に失敗しました' });
+            set({ error: result.error || 'Failed to delete agent' });
             return false;
           }
         } catch (error) {
-          set({ error: 'エージェントの削除中にエラーが発生しました' });
+          set({ error: 'An error occurred while deleting agent' });
           return false;
         } finally {
           set({ isLoading: false });
         }
       },
 
-      setCurrentAgent: (agent) => set({ 
+      setCurrentAgent: (agent) => set({
         currentAgent: agent,
         currentSession: null,
         currentTokenUsage: null,
@@ -181,7 +181,7 @@ export const useChatStore = create<ChatStore>()(
         messages: []
       }),
 
-      // セッション関連アクション
+      // Session-related actions
       loadSessions: async () => {
         try {
           set({ isLoading: true, error: null });
@@ -189,10 +189,10 @@ export const useChatStore = create<ChatStore>()(
           if (result.success && result.data) {
             set({ sessions: result.data });
           } else {
-            set({ error: result.error || 'セッションの読み込みに失敗しました' });
+            set({ error: result.error || 'Failed to load sessions' });
           }
         } catch (error) {
-          set({ error: 'セッションの読み込み中にエラーが発生しました' });
+          set({ error: 'An error occurred while loading sessions' });
         } finally {
           set({ isLoading: false });
         }
@@ -205,10 +205,10 @@ export const useChatStore = create<ChatStore>()(
           if (result.success && result.data) {
             set({ sessions: result.data });
           } else {
-            set({ error: result.error || 'エージェント別セッションの読み込みに失敗しました' });
+            set({ error: result.error || 'Failed to load sessions for agent' });
           }
         } catch (error) {
-          set({ error: 'エージェント別セッションの読み込み中にエラーが発生しました' });
+          set({ error: 'An error occurred while loading sessions for agent' });
         } finally {
           set({ isLoading: false });
         }
@@ -232,11 +232,11 @@ export const useChatStore = create<ChatStore>()(
             }));
             return true;
           } else {
-            set({ error: result.error || 'セッションの作成に失敗しました' });
+            set({ error: result.error || 'Failed to create session' });
             return false;
           }
         } catch (error) {
-          set({ error: 'セッションの作成中にエラーが発生しました' });
+          set({ error: 'An error occurred while creating session' });
           return false;
         } finally {
           set({ isLoading: false });
@@ -250,8 +250,8 @@ export const useChatStore = create<ChatStore>()(
           output_tokens: session.output_tokens || session.outputTokens || 0,
         } : null;
 
-        set({ 
-          currentSession: session, 
+        set({
+          currentSession: session,
           messages: [],
           currentTokenUsage: initialTokenUsage
         });
