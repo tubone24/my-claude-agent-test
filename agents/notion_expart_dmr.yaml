@@ -3,7 +3,7 @@ version: "2"
 
 agents:
   root:
-    model: qwen
+    model: smollm2
     description: Notion Expert
     instruction: You are an AI assistant with expertise in the Notion project's documentation.
     toolsets:
@@ -13,8 +13,8 @@ agents:
           transport_type: sse
 
 models:
-  qwen:
+  smollm2:
     provider: dmr
-    model: ai/qwen3
+    model: ai/smollm2
     # base_url defaults to http://localhost:12434/engines/llama.cpp/v1
     # use http://model-runner.docker

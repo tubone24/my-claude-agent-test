@@ -10,6 +10,7 @@ import {
   CreateAgentRequest,
   UpdateAgentRequest,
   ExecuteAgentRequest,
+  OAuthAuthorizationRequest,
 } from './types';
 
 interface ChatStore {
@@ -26,6 +27,8 @@ interface ChatStore {
   currentToolCall: any | null;
   currentTokenUsage: { input_tokens?: number; output_tokens?: number; context_length?: number } | null;
   currentSessionTitle: string | null;
+  pendingOAuthAuth: boolean;
+  currentOAuthRequest: OAuthAuthorizationRequest | null;
 
   // アクション
   setError: (error: string | null) => void;
@@ -63,6 +66,11 @@ interface ChatStore {
   approveAllTools: () => Promise<void>;
   denyTools: () => Promise<void>;
 
+  // OAuth認証関連
+  setPendingOAuthAuth: (pending: boolean, oauthRequest?: OAuthAuthorizationRequest) => void;
+  approveOAuth: () => Promise<void>;
+  denyOAuth: () => Promise<void>;
+
   // YAML管理関連
   getAgentYAML: (agentId: string) => Promise<string | null>;
   updateAgentYAML: (agentId: string, yamlContent: string) => Promise<boolean>;
@@ -84,6 +92,8 @@ export const useChatStore = create<ChatStore>()(
       currentToolCall: null,
       currentTokenUsage: null,
       currentSessionTitle: null,
+      pendingOAuthAuth: false,
+      currentOAuthRequest: null,
 
       // 基本アクション
       setError: (error) => set({ error }),
@@ -728,6 +738,24 @@ export const useChatStore = create<ChatStore>()(
                     }
                     break;
 
+                  case 'elicitation_request':
+                    // OAuth認証リクエストを処理
+                    console.log('🔐 Elicitation request received:', data);
+
+                    // メタデータからOAuth認証タイプをチェック
+                    if (data.meta && data.meta['cagent/type'] === 'oauth_consent') {
+                      const serverUrl = data.meta['cagent/server_url'];
+                      const message = data.message || `The MCP server at ${serverUrl} requires OAuth authorization.`;
+
+                      console.log('OAuth consent requested for server:', serverUrl);
+
+                      const { setPendingOAuthAuth } = get();
+                      setPendingOAuthAuth(true, { serverUrl, message });
+                    } else {
+                      console.warn('Unknown elicitation type:', data.meta);
+                    }
+                    break;
+
                   default:
                     console.log('Unknown SSE event:', data);
                 }
@@ -875,7 +903,7 @@ export const useChatStore = create<ChatStore>()(
         try {
           console.log('Calling resumeSession API with reject');
           const result = await cagentAPI.resumeSession(currentSession.id, 'reject');
-          
+
           if (result.success) {
             // 承認バナーを非表示
             setPendingToolApproval(false, null);
@@ -894,6 +922,75 @@ export const useChatStore = create<ChatStore>()(
         } catch (error) {
           console.error('Tool denial error:', error);
           set({ error: 'ツールの拒否中にエラーが発生しました' });
+        }
+      },
+
+      // OAuth認証関連アクション
+      setPendingOAuthAuth: (pending, oauthRequest) => {
+        console.log('setPendingOAuthAuth called:', { pending, oauthRequest });
+        set({ pendingOAuthAuth: pending, currentOAuthRequest: oauthRequest || null });
+      },
+
+      approveOAuth: async () => {
+        const { currentSession, setPendingOAuthAuth } = get();
+        console.log('approveOAuth called, currentSession:', currentSession);
+
+        if (!currentSession) {
+          console.error('No current session found');
+          set({ error: 'セッションが見つかりません' });
+          return;
+        }
+
+        try {
+          console.log('Calling resumeElicitation API with accept');
+          const result = await cagentAPI.resumeElicitation(currentSession.id, 'accept');
+
+          if (result.success) {
+            // 承認バナーを非表示にして処理を続行
+            setPendingOAuthAuth(false, undefined);
+            console.log('OAuth approved successfully - streaming will continue');
+          } else {
+            console.error('Failed to approve OAuth:', result.error);
+            set({ error: result.error || 'OAuth認証の承認に失敗しました' });
+          }
+        } catch (error) {
+          console.error('OAuth approval error:', error);
+          set({ error: 'OAuth認証の承認中にエラーが発生しました' });
+        }
+      },
+
+      denyOAuth: async () => {
+        const { currentSession, setPendingOAuthAuth, stopStreaming } = get();
+        console.log('denyOAuth called, currentSession:', currentSession);
+
+        if (!currentSession) {
+          console.error('No current session found');
+          set({ error: 'セッションが見つかりません' });
+          return;
+        }
+
+        try {
+          console.log('Calling resumeElicitation API with decline');
+          const result = await cagentAPI.resumeElicitation(currentSession.id, 'decline');
+
+          if (result.success) {
+            // 承認バナーを非表示
+            setPendingOAuthAuth(false, undefined);
+            console.log('OAuth rejected successfully');
+          } else {
+            console.error('Failed to reject OAuth:', result.error);
+          }
+
+          // ストリーミングを停止してエージェント処理を中断
+          stopStreaming();
+
+          // ユーザーにフィードバック
+          set({ error: null }); // エラーメッセージをクリア
+          console.log('OAuth denied and streaming stopped successfully');
+
+        } catch (error) {
+          console.error('OAuth denial error:', error);
+          set({ error: 'OAuth認証の拒否中にエラーが発生しました' });
         }
       },
 

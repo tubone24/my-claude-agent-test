@@ -20,6 +20,8 @@ export default function Home() {
     error,
     pendingToolApproval,
     currentToolCall,
+    pendingOAuthAuth,
+    currentOAuthRequest,
     currentTokenUsage,
     currentSessionTitle,
     loadAgents,
@@ -33,7 +35,9 @@ export default function Home() {
     stopStreaming,
     approveTools,
     approveAllTools,
-    denyTools
+    denyTools,
+    approveOAuth,
+    denyOAuth
   } = useChatStore()
 
   const [messageInput, setMessageInput] = useState('')
@@ -473,6 +477,53 @@ export default function Home() {
                       </CardContent>
                     </Card>
                   )}
+                </div>
+              )}
+
+              {/* OAuth Authorization Banner */}
+              {pendingOAuthAuth && currentOAuthRequest && (
+                <div className="flex-shrink-0 px-4 pt-4">
+                  <Card className="border-green-200 bg-green-50">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-green-800">OAuth認証が必要です</h4>
+                          <p className="text-sm text-green-600 mt-1">
+                            {currentOAuthRequest.message}
+                          </p>
+                          <div className="mt-2 p-2 bg-green-100 rounded border border-green-200">
+                            <p className="text-xs text-green-700 font-semibold mb-1">サーバー:</p>
+                            <p className="text-xs text-green-600 font-mono break-all">
+                              {currentOAuthRequest.serverUrl}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col space-y-2 flex-shrink-0">
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              console.log('Approving OAuth authorization...');
+                              approveOAuth();
+                            }}
+                            className="bg-green-600 text-white hover:bg-green-700 whitespace-nowrap"
+                          >
+                            承認
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              console.log('Denying OAuth authorization...');
+                              denyOAuth();
+                            }}
+                            className="whitespace-nowrap"
+                          >
+                            拒否
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               )}
 

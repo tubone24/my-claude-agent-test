@@ -218,3 +218,21 @@ export const TOOLSET_TYPES = [
 ] as const;
 
 export type ToolsetType = typeof TOOLSET_TYPES[number];
+
+// OAuth認証関連
+export interface ElicitationRequestEvent {
+  type: 'elicitation_request';
+  message: string;
+  schema?: any;
+  meta?: {
+    'cagent/type'?: string;
+    'cagent/server_url'?: string;
+    [key: string]: any;
+  };
+  agent_name?: string;
+}
+
+export interface OAuthAuthorizationRequest {
+  serverUrl: string;
+  message: string;
+}

@@ -335,11 +335,18 @@ class CagentAPI {
     return this.request('/desktop/token');
   }
 
-  // OAuth
-  async startOAuth(sessionId: string): Promise<APIResponse<{ message: string }>> {
+  // OAuth / Elicitation
+  async resumeElicitation(sessionId: string, action: 'accept' | 'decline' | 'cancel', content?: Record<string, any>): Promise<APIResponse<{ message: string }>> {
+    return this.request(`/sessions/${encodeURIComponent(sessionId)}/elicitation`, {
+      method: 'POST',
+      body: JSON.stringify({ action, content: content || {} }),
+    });
+  }
+
+  async startOAuth(sessionId: string, confirmation: boolean): Promise<APIResponse<{ message: string }>> {
     return this.request(`/${encodeURIComponent(sessionId)}/resumeStartOauth`, {
       method: 'POST',
-      body: JSON.stringify({ confirmation: true }),
+      body: JSON.stringify({ confirmation }),
     });
   }
 
