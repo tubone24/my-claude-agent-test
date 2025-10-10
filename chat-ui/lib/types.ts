@@ -46,9 +46,13 @@ export interface Session {
   created_at?: string;
   createdAt?: string;
   numMessages?: number;
+  num_messages?: number;
   inputTokens?: number;
   outputTokens?: number;
+  input_tokens?: number;
+  output_tokens?: number;
   getMostRecentAgentFilename?: string;
+  most_recent_agent_filename?: string;
   workingDir?: string;
   messages?: Message[];
   tools_approved?: boolean;

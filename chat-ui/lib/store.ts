@@ -163,7 +163,13 @@ export const useChatStore = create<ChatStore>()(
         }
       },
 
-      setCurrentAgent: (agent) => set({ currentAgent: agent }),
+      setCurrentAgent: (agent) => set({ 
+        currentAgent: agent,
+        currentSession: null,
+        currentTokenUsage: null,
+        currentSessionTitle: null,
+        messages: []
+      }),
 
       // セッション関連アクション
       loadSessions: async () => {
@@ -208,7 +214,10 @@ export const useChatStore = create<ChatStore>()(
               sessions: [...state.sessions, newSession],
               currentSession: newSession,
               messages: [],
-              currentTokenUsage: null,
+              currentTokenUsage: {
+                input_tokens: 0,
+                output_tokens: 0,
+              },
               currentSessionTitle: null,
             }));
             return true;
@@ -225,7 +234,17 @@ export const useChatStore = create<ChatStore>()(
       },
 
       setCurrentSession: async (session) => {
-        set({ currentSession: session, messages: [] });
+        // セッションのトークン数を初期化
+        const initialTokenUsage = session ? {
+          input_tokens: session.input_tokens || session.inputTokens || 0,
+          output_tokens: session.output_tokens || session.outputTokens || 0,
+        } : null;
+
+        set({ 
+          currentSession: session, 
+          messages: [],
+          currentTokenUsage: initialTokenUsage
+        });
 
         // セッションの詳細を読み込む
         if (session) {
@@ -304,9 +323,16 @@ export const useChatStore = create<ChatStore>()(
 
               console.log('Converted messages:', messages);
 
+              // セッションのトークン数を更新
+              const updatedTokenUsage = {
+                input_tokens: result.data.input_tokens || result.data.inputTokens || 0,
+                output_tokens: result.data.output_tokens || result.data.outputTokens || 0,
+              };
+
               set({
                 currentSession: result.data,
-                messages: messages
+                messages: messages,
+                currentTokenUsage: updatedTokenUsage
               });
             }
           } catch (error) {
