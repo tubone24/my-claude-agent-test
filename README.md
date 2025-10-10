@@ -113,9 +113,6 @@ This Playground is a web-based chat UI for interacting with Cagent agents. It pr
   ![Tool Search](docs/images/tool_search.png)
   *Example of search tool execution results with structured data*
 
-> [!WARNING]
-> Cagent does not currently support dynamic tool approval during execution. Therefore, this playground automatically approves tool usage when creating sessions (`tools_approved: true`). The tool usage information banner is displayed for informational purposes only.
-
 - **Token Usage Display & Session Management**: Shows input/output token counts and session titles in the header
 
   ![Session Title and Token Usage](docs/images/session_title_token.png)

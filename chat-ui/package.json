@@ -9,10 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-slot": "^1.0.2",
     "@tailwindcss/typography": "^0.5.19",
+    "@types/js-yaml": "^4.0.9",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "js-yaml": "^4.1.0",
     "lucide-react": "^0.298.0",
     "next": "^14.2.33",
     "react": "^18",

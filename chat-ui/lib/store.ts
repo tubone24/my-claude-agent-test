@@ -997,11 +997,9 @@ export const useChatStore = create<ChatStore>()(
       // YAML管理関連アクション
       getAgentYAML: async (agentId: string) => {
         try {
-          const result = await cagentAPI.getAgent(agentId);
+          const result = await cagentAPI.getAgentYAML(agentId);
           if (result.success && result.data) {
-            // AgentConfigをYAML文字列に変換（簡易実装）
-            const yamlContent = JSON.stringify(result.data, null, 2);
-            return yamlContent;
+            return result.data;
           } else {
             set({ error: result.error || 'YAMLの読み込みに失敗しました' });
             return null;
@@ -1014,14 +1012,7 @@ export const useChatStore = create<ChatStore>()(
 
       updateAgentYAML: async (agentId: string, yamlContent: string) => {
         try {
-          // YAML文字列をAgentConfigに変換（簡易実装）
-          const agentConfig = JSON.parse(yamlContent);
-
-          const result = await cagentAPI.updateAgent({
-            filename: agentId,
-            agent_config: agentConfig
-          });
-
+          const result = await cagentAPI.updateAgentYAML(agentId, yamlContent);
           if (result.success) {
             await get().loadAgents(); // 更新後にリストを更新
             return true;

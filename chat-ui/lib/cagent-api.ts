@@ -121,6 +121,62 @@ class CagentAPI {
     return this.request(`/agents/${encodeURIComponent(id)}`);
   }
 
+  async getAgentYAML(id: string): Promise<APIResponse<string>> {
+    try {
+      const response = await fetch(`${this.baseUrl}/agents/${encodeURIComponent(id)}/yaml`);
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        return {
+          success: false,
+          error: `HTTP ${response.status}: ${errorData}`,
+        };
+      }
+
+      const yamlContent = await response.text();
+      return {
+        success: true,
+        data: yamlContent,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '不明なエラーが発生しました',
+      };
+    }
+  }
+
+  async updateAgentYAML(id: string, yamlContent: string): Promise<APIResponse<string>> {
+    try {
+      const response = await fetch(`${this.baseUrl}/agents/${encodeURIComponent(id)}/yaml`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+        body: yamlContent,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        return {
+          success: false,
+          error: `HTTP ${response.status}: ${errorData}`,
+        };
+      }
+
+      const updatedYaml = await response.text();
+      return {
+        success: true,
+        data: updatedYaml,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '不明なエラーが発生しました',
+      };
+    }
+  }
+
   async createAgent(agent: CreateAgentRequest): Promise<APIResponse<{ filepath: string }>> {
     return this.request('/agents/config', {
       method: 'POST',

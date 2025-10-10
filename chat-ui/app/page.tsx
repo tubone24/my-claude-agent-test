@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { YAMLEditorDialog } from '@/components/ui/yaml-editor-dialog'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -37,13 +38,17 @@ export default function Home() {
     approveAllTools,
     denyTools,
     approveOAuth,
-    denyOAuth
+    denyOAuth,
+    getAgentYAML,
+    updateAgentYAML
   } = useChatStore()
 
   const [messageInput, setMessageInput] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null)
   const [isComposing, setIsComposing] = useState(false)
+  const [yamlEditorOpen, setYamlEditorOpen] = useState(false)
+  const [editingAgent, setEditingAgent] = useState<{ id: string; name: string } | null>(null)
 
   useEffect(() => {
     const initialize = async () => {
@@ -123,6 +128,17 @@ export default function Home() {
     }
   }
 
+  const handleOpenYAMLEditor = (agent: any, e: React.MouseEvent) => {
+    e.stopPropagation() // エージェント選択を防ぐ
+    setEditingAgent({ id: agent.name, name: agent.name })
+    setYamlEditorOpen(true)
+  }
+
+  const handleCloseYAMLEditor = () => {
+    setYamlEditorOpen(false)
+    setEditingAgent(null)
+  }
+
   if (isLoading && !agents.length) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -163,7 +179,20 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <>
+      {/* YAMLエディタダイアログ */}
+      {editingAgent && (
+        <YAMLEditorDialog
+          agentId={editingAgent.id}
+          agentName={editingAgent.name}
+          isOpen={yamlEditorOpen}
+          onClose={handleCloseYAMLEditor}
+          onSave={updateAgentYAML}
+          onLoad={getAgentYAML}
+        />
+      )}
+
+      <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 bg-muted/30 border-r border-border overflow-hidden`}>
         <div className="p-4 h-full">
@@ -198,13 +227,24 @@ export default function Home() {
                         🤖
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <div className="font-medium text-sm">{agent.name}</div>
-                          {agent.multi && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-700 border border-purple-200">
-                              Multi
-                            </span>
-                          )}
+                        <div className="flex items-center gap-2 justify-between">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <div className="font-medium text-sm truncate">{agent.name}</div>
+                            {agent.multi && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-700 border border-purple-200 flex-shrink-0">
+                                Multi
+                              </span>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => handleOpenYAMLEditor(agent, e)}
+                            className="h-6 w-6 p-0 hover:bg-blue-100 hover:text-blue-600 flex-shrink-0"
+                            title="YAML設定を編集"
+                          >
+                            📝
+                          </Button>
                         </div>
                         <div className="text-xs text-muted-foreground line-clamp-1">
                           {agent.description || 'No description'}
@@ -797,6 +837,7 @@ export default function Home() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
