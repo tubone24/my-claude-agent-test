@@ -39,3 +39,5 @@ session.db
 
 # temp upload directory
 /tmp
+*storybook.log
+storybook-static
