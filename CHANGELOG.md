@@ -104,7 +104,7 @@ This project is a web-based chat UI for interacting with Docker Cagent agents. I
 
 ## Roadmap
 
-- [ ] Add version tags and release management
+TBD
 
 ---
 
