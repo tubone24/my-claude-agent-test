@@ -9,10 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - 2025-10-11
 
+- **Agent Structure Visualization**: Added interactive graph visualization for agent hierarchies and relationships ([c2a6cdf](https://github.com/tubone24/docker-cagent-playground/commit/c2a6cdf), [11d83b5](https://github.com/tubone24/docker-cagent-playground/commit/11d83b5))
+  - Hierarchical layout showing parent-child agent relationships with arrows
+  - Visual indicators for root agents (👑) and sub-agents (🤖)
+  - Color-coded tool badges for each tool type (consistent colors per tool)
+  - Model information display for each agent
+  - Interactive pan and zoom controls powered by ReactFlow
+  - Automatic layout using the Dagre algorithm
+- **Agent Push/Pull**: Added functionality to push and pull agent configurations ([522828b](https://github.com/tubone24/docker-cagent-playground/commit/522828b))
+- **Storybook Integration**: Added Storybook for UI component development and documentation ([6023547](https://github.com/tubone24/docker-cagent-playground/commit/6023547), [929cdcf](https://github.com/tubone24/docker-cagent-playground/commit/929cdcf))
 - **Message Copy Feature**: Added clipboard copy functionality for messages ([c389b32](https://github.com/tubone24/docker-cagent-playground/commit/c389b32))
 - **Agent Import/Export**: Added import/export functionality for agent configuration files ([9c27139](https://github.com/tubone24/docker-cagent-playground/commit/9c27139))
 
 ### Changed - 2025-10-11
+
+- **Package Version**: Updated version from 0.1.0 to 0.2.0 ([a5367fd](https://github.com/tubone24/docker-cagent-playground/commit/a5367fd))
 
 - **Code Internationalization**: Translated Japanese text to English in UI components ([9549d1a](https://github.com/tubone24/docker-cagent-playground/commit/9549d1a))
 
@@ -98,6 +109,7 @@ This project is a web-based chat UI for interacting with Docker Cagent agents. I
 - 📊 **Token Usage Display**: Shows input/output token counts and session titles in the header
 - ⏸️ **Streaming Control**: Ability to stop ongoing responses
 - ✏️ **YAML Editor**: Edit agent configuration files directly from the UI
+- 📈 **Agent Structure Visualization**: Interactive graph showing agent hierarchies and tool relationships
 - 🔐 **Tool Approval**: Control tool execution and remote MCP server access
 - 🌓 **Dark Mode**: Toggle between light/dark themes
 - 🗑️ **Session Management**: Create, load, and delete sessions
