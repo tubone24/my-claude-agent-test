@@ -43,7 +43,9 @@ export default function Home() {
     getAgentYAML,
     updateAgentYAML,
     importAgent,
-    exportAgents
+    exportAgents,
+    pullAgent,
+    pushAgent
   } = useChatStore()
 
   const [messageInput, setMessageInput] = useState('')
@@ -57,6 +59,14 @@ export default function Home() {
   const [showExportSuccess, setShowExportSuccess] = useState(false)
   const [exportedFilePath, setExportedFilePath] = useState('')
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
+  const [showPullDialog, setShowPullDialog] = useState(false)
+  const [pullAgentName, setPullAgentName] = useState('')
+  const [showPushDialog, setShowPushDialog] = useState(false)
+  const [pushAgentPath, setPushAgentPath] = useState('')
+  const [pushAgentTag, setPushAgentTag] = useState('')
+  const [showPullSuccess, setShowPullSuccess] = useState(false)
+  const [showPushSuccess, setShowPushSuccess] = useState(false)
+  const [pushDigest, setPushDigest] = useState('')
 
   // デバッグモードの設定（環境変数から取得）
   const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
@@ -166,6 +176,30 @@ export default function Home() {
       setShowExportSuccess(true)
       // 5秒後に成功メッセージを閉じる
       setTimeout(() => setShowExportSuccess(false), 5000)
+    }
+  }
+
+  const handlePullAgent = async () => {
+    if (!pullAgentName.trim()) return
+    const success = await pullAgent(pullAgentName.trim())
+    if (success) {
+      setPullAgentName('')
+      setShowPullDialog(false)
+      setShowPullSuccess(true)
+      setTimeout(() => setShowPullSuccess(false), 5000)
+    }
+  }
+
+  const handlePushAgent = async () => {
+    if (!pushAgentPath.trim() || !pushAgentTag.trim()) return
+    const result = await pushAgent(pushAgentPath.trim(), pushAgentTag.trim())
+    if (result && result.digest) {
+      setPushDigest(result.digest)
+      setPushAgentPath('')
+      setPushAgentTag('')
+      setShowPushDialog(false)
+      setShowPushSuccess(true)
+      setTimeout(() => setShowPushSuccess(false), 5000)
     }
   }
 
@@ -320,7 +354,7 @@ export default function Home() {
               )}
             </div>
 
-            {/* Import/Export Buttons */}
+            {/* Import/Export/Pull/Push Buttons */}
             <div className="space-y-2 pt-2 border-t">
               <Button
                 size="sm"
@@ -339,6 +373,27 @@ export default function Home() {
               >
                 📤 Export All Agents
               </Button>
+              {/* Pull/Push buttons only shown in debug mode */}
+              {debugMode && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowPullDialog(true)}
+                    className="w-full text-xs"
+                  >
+                    ⬇️ Pull Agent
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowPushDialog(true)}
+                    className="w-full text-xs"
+                  >
+                    ⬆️ Push Agent
+                  </Button>
+                </>
+              )}
             </div>
           </div>
 
@@ -406,6 +461,146 @@ export default function Home() {
                       <p className="text-xs text-green-600 font-mono mt-2 break-all">
                         {exportedFilePath}
                       </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Pull Agent Dialog */}
+          {showPullDialog && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <Card className="w-[400px]">
+                <CardHeader>
+                  <CardTitle>Pull Agent</CardTitle>
+                  <CardDescription>
+                    Enter the agent name to pull from the registry (e.g., username/agent-name)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Agent Name</label>
+                    <input
+                      type="text"
+                      value={pullAgentName}
+                      onChange={(e) => setPullAgentName(e.target.value)}
+                      placeholder="e.g., username/agent-name"
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowPullDialog(false)
+                        setPullAgentName('')
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handlePullAgent}
+                      disabled={!pullAgentName.trim() || isLoading}
+                    >
+                      {isLoading ? 'Pulling...' : 'Pull'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Push Agent Dialog */}
+          {showPushDialog && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <Card className="w-[400px]">
+                <CardHeader>
+                  <CardTitle>Push Agent</CardTitle>
+                  <CardDescription>
+                    Enter the agent file path and tag to push to the registry
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Agent File Path</label>
+                    <input
+                      type="text"
+                      value={pushAgentPath}
+                      onChange={(e) => setPushAgentPath(e.target.value)}
+                      placeholder="e.g., /path/to/agent.yaml"
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Tag</label>
+                    <input
+                      type="text"
+                      value={pushAgentTag}
+                      onChange={(e) => setPushAgentTag(e.target.value)}
+                      placeholder="e.g., username/agent-name:latest"
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowPushDialog(false)
+                        setPushAgentPath('')
+                        setPushAgentTag('')
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handlePushAgent}
+                      disabled={!pushAgentPath.trim() || !pushAgentTag.trim() || isLoading}
+                    >
+                      {isLoading ? 'Pushing...' : 'Push'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Pull Success Message */}
+          {showPullSuccess && (
+            <div className="fixed bottom-4 right-4 z-50">
+              <Card className="border-green-200 bg-green-50">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <span className="text-green-600 text-xl">✓</span>
+                    <div>
+                      <h4 className="font-medium text-green-800">Pull successful</h4>
+                      <p className="text-sm text-green-600 mt-1">
+                        The agent has been pulled successfully.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Push Success Message */}
+          {showPushSuccess && (
+            <div className="fixed bottom-4 right-4 z-50">
+              <Card className="border-green-200 bg-green-50">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <span className="text-green-600 text-xl">✓</span>
+                    <div>
+                      <h4 className="font-medium text-green-800">Push successful</h4>
+                      <p className="text-sm text-green-600 mt-1">
+                        The agent has been pushed successfully.
+                      </p>
+                      {pushDigest && (
+                        <p className="text-xs text-green-600 font-mono mt-2 break-all">
+                          Digest: {pushDigest}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </CardContent>
