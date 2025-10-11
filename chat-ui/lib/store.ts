@@ -319,7 +319,7 @@ export const useChatStore = create<ChatStore>()(
                     // ツールメッセージの場合は追加のフィールドを設定
                     if (msg.role === 'tool') {
                       message.messageType = 'tool_result';
-                      message.toolName = msg.name || 'ツール';
+                      message.toolName = msg.name || 'tool';
                       message.toolCall = msg.tool_call_id ? {
                         id: msg.tool_call_id,
                         type: 'function',
@@ -350,7 +350,7 @@ export const useChatStore = create<ChatStore>()(
               });
             }
           } catch (error) {
-            console.error('セッション詳細の読み込みエラー:', error);
+            console.error('Session details loading error:', error);
           }
         }
       },
@@ -367,11 +367,11 @@ export const useChatStore = create<ChatStore>()(
             }));
             return true;
           } else {
-            set({ error: result.error || 'セッションの削除に失敗しました' });
+            set({ error: result.error || 'Session deletion failed' });
             return false;
           }
         } catch (error) {
-          set({ error: 'セッションの削除中にエラーが発生しました' });
+          set({ error: 'An error occurred while deleting the session.' });
           return false;
         } finally {
           set({ isLoading: false });
@@ -834,7 +834,7 @@ export const useChatStore = create<ChatStore>()(
         
         if (!currentSession) {
           console.error('No current session found');
-          set({ error: 'セッションが見つかりません' });
+          set({ error: 'Session not found' });
           return;
         }
         
@@ -848,11 +848,11 @@ export const useChatStore = create<ChatStore>()(
             console.log('Tool approved successfully - streaming will continue');
           } else {
             console.error('Failed to approve tool:', result.error);
-            set({ error: result.error || 'ツールの承認に失敗しました' });
+            set({ error: result.error || 'Tool approval failed.' });
           }
         } catch (error) {
           console.error('Tool approval error:', error);
-          set({ error: 'ツールの承認中にエラーが発生しました' });
+          set({ error: 'An error occurred during tool approval.' });
         }
       },
 
@@ -862,7 +862,7 @@ export const useChatStore = create<ChatStore>()(
         
         if (!currentSession) {
           console.error('No current session found');
-          set({ error: 'セッションが見つかりません' });
+          set({ error: 'Session not found' });
           return;
         }
         
@@ -886,11 +886,11 @@ export const useChatStore = create<ChatStore>()(
             console.log('All tools approved for this session - no more confirmations needed');
           } else {
             console.error('Failed to approve all tools:', result.error);
-            set({ error: result.error || 'ツールの全許可に失敗しました' });
+            set({ error: result.error || 'Failed to grant full approval for the tool' });
           }
         } catch (error) {
           console.error('Tool approval error:', error);
-          set({ error: 'ツールの全許可中にエラーが発生しました' });
+          set({ error: 'An error occurred during full tool approval.' });
         }
       },
 
@@ -900,7 +900,7 @@ export const useChatStore = create<ChatStore>()(
 
         if (!currentSession) {
           console.error('No current session found');
-          set({ error: 'セッションが見つかりません' });
+          set({ error: 'Session not found' });
           return;
         }
 
@@ -925,7 +925,7 @@ export const useChatStore = create<ChatStore>()(
 
         } catch (error) {
           console.error('Tool denial error:', error);
-          set({ error: 'ツールの拒否中にエラーが発生しました' });
+          set({ error: 'An error occurred while rejecting the tool.' });
         }
       },
 
@@ -941,7 +941,7 @@ export const useChatStore = create<ChatStore>()(
 
         if (!currentSession) {
           console.error('No current session found');
-          set({ error: 'セッションが見つかりません' });
+          set({ error: 'Session not found' });
           return;
         }
 
@@ -955,11 +955,11 @@ export const useChatStore = create<ChatStore>()(
             console.log('OAuth approved successfully - streaming will continue');
           } else {
             console.error('Failed to approve OAuth:', result.error);
-            set({ error: result.error || 'OAuth認証の承認に失敗しました' });
+            set({ error: result.error || 'OAuth authentication authorization failed.' });
           }
         } catch (error) {
           console.error('OAuth approval error:', error);
-          set({ error: 'OAuth認証の承認中にエラーが発生しました' });
+          set({ error: 'An error occurred during OAuth authentication.' });
         }
       },
 
@@ -969,7 +969,7 @@ export const useChatStore = create<ChatStore>()(
 
         if (!currentSession) {
           console.error('No current session found');
-          set({ error: 'セッションが見つかりません' });
+          set({ error: 'Session not found' });
           return;
         }
 
@@ -994,7 +994,7 @@ export const useChatStore = create<ChatStore>()(
 
         } catch (error) {
           console.error('OAuth denial error:', error);
-          set({ error: 'OAuth認証の拒否中にエラーが発生しました' });
+          set({ error: 'An error occurred during OAuth authentication.' });
         }
       },
 
@@ -1005,11 +1005,11 @@ export const useChatStore = create<ChatStore>()(
           if (result.success && result.data) {
             return result.data;
           } else {
-            set({ error: result.error || 'YAMLの読み込みに失敗しました' });
+            set({ error: result.error || 'Failed to load YAML' });
             return null;
           }
         } catch (error) {
-          set({ error: 'YAMLの読み込み中にエラーが発生しました' });
+          set({ error: 'An error occurred while reading YAML.' });
           return null;
         }
       },
@@ -1021,11 +1021,11 @@ export const useChatStore = create<ChatStore>()(
             await get().loadAgents(); // 更新後にリストを更新
             return true;
           } else {
-            set({ error: result.error || 'YAMLの更新に失敗しました' });
+            set({ error: result.error || 'Failed to update YAML' });
             return false;
           }
         } catch (error) {
-          set({ error: 'YAMLの更新中にエラーが発生しました' });
+          set({ error: 'An error occurred while updating YAML.' });
           return false;
         }
       },
@@ -1039,11 +1039,11 @@ export const useChatStore = create<ChatStore>()(
             await get().loadAgents(); // インポート後にリストを更新
             return true;
           } else {
-            set({ error: result.error || 'エージェントのインポートに失敗しました' });
+            set({ error: result.error || 'Agent import failed' });
             return false;
           }
         } catch (error) {
-          set({ error: 'エージェントのインポート中にエラーが発生しました' });
+          set({ error: 'An error occurred while importing the agent.' });
           return false;
         } finally {
           set({ isLoading: false });
@@ -1057,11 +1057,11 @@ export const useChatStore = create<ChatStore>()(
           if (result.success && result.data) {
             return { zipPath: result.data.zipPath };
           } else {
-            set({ error: result.error || 'エージェントのエクスポートに失敗しました' });
+            set({ error: result.error || 'Agent export failed' });
             return null;
           }
         } catch (error) {
-          set({ error: 'エージェントのエクスポート中にエラーが発生しました' });
+          set({ error: 'An error occurred while exporting the agent.' });
           return null;
         } finally {
           set({ isLoading: false });

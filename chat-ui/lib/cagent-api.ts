@@ -141,7 +141,7 @@ class CagentAPI {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : '不明なエラーが発生しました',
+        error: error instanceof Error ? error.message : 'An unknown error has occurred.',
       };
     }
   }
@@ -172,7 +172,7 @@ class CagentAPI {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : '不明なエラーが発生しました',
+        error: error instanceof Error ? error.message : 'An unknown error has occurred.',
       };
     }
   }
@@ -249,7 +249,7 @@ class CagentAPI {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : '不明なエラーが発生しました',
+        error: error instanceof Error ? error.message : 'An unknown error has occurred.',
       };
     }
   }
@@ -340,28 +340,6 @@ class CagentAPI {
     });
   }
 
-  // ツール承認（Cagentの実際の仕組みに合わせて修正）
-  async approveTools(sessionId: string): Promise<APIResponse<{ message: string }>> {
-    console.log('Cagentではツール承認はセッション作成時に決定されます');
-    console.log('現在のセッションでは動的承認はサポートされていません');
-    
-    // UIのためのダミー応答（実際の処理はしない）
-    return { 
-      success: true, 
-      data: { message: 'ツール承認の UI表示を非表示にします（Cagentは動的承認未サポート）' } 
-    };
-  }
-
-  async denyTools(sessionId: string): Promise<APIResponse<{ message: string }>> {
-    console.log('ツールを拒否しました。ストリーミングを停止します。');
-    
-    // ツール拒否時はストリーミング停止で代替
-    return { 
-      success: true, 
-      data: { message: 'ツールが拒否されました。処理を停止します。' } 
-    };
-  }
-
   // エージェント実行 (POST with Streaming Response)
   executeAgent(
     sessionId: string,
@@ -447,7 +425,7 @@ class CagentAPI {
           // ユーザーによる中断は正常な処理
           onComplete?.();
         } else {
-          onError?.(error instanceof Error ? error.message : '不明なエラーが発生しました');
+          onError?.(error instanceof Error ? error.message : 'An unknown error has occurred.');
         }
       }
     };

@@ -319,7 +319,7 @@ export default function Home() {
                 <CardHeader>
                   <CardTitle>Import Agent</CardTitle>
                   <CardDescription>
-                    エージェントのYAMLファイルを選択してください
+                      Please select the agent's YAML file.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -335,7 +335,7 @@ export default function Home() {
                     />
                     {selectedFile && (
                       <p className="text-xs text-muted-foreground">
-                        選択されたファイル: {selectedFile.name}
+                          Selected file: {selectedFile.name}
                       </p>
                     )}
                   </div>
@@ -347,13 +347,13 @@ export default function Home() {
                         setSelectedFile(null)
                       }}
                     >
-                      キャンセル
+                      Cancel
                     </Button>
                     <Button
                       onClick={handleImportAgent}
                       disabled={!selectedFile || isLoading}
                     >
-                      {isLoading ? 'インポート中...' : 'インポート'}
+                      {isLoading ? 'Importing...' : 'Import'}
                     </Button>
                   </div>
                 </CardContent>
@@ -369,9 +369,9 @@ export default function Home() {
                   <div className="flex items-start gap-3">
                     <span className="text-green-600 text-xl">✓</span>
                     <div>
-                      <h4 className="font-medium text-green-800">エクスポート成功</h4>
+                      <h4 className="font-medium text-green-800">Export successful</h4>
                       <p className="text-sm text-green-600 mt-1">
-                        ZIPファイルが作成されました
+                          A ZIP file has been created.
                       </p>
                       <p className="text-xs text-green-600 font-mono mt-2 break-all">
                         {exportedFilePath}

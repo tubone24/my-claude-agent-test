@@ -155,7 +155,7 @@ export function YAMLEditorDialog({
           {/* バリデーションエラー表示 */}
           {validationError && (
             <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
-              <div className="font-semibold">YAML構文エラー:</div>
+              <div className="font-semibold">syntax error:</div>
               <div className="text-sm mt-1">{validationError}</div>
             </div>
           )}
@@ -166,7 +166,7 @@ export function YAMLEditorDialog({
               <div className="flex items-center justify-center h-full">
                 <div className="text-center space-y-4">
                   <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-                  <p className="text-muted-foreground">読み込み中...</p>
+                  <p className="text-muted-foreground">Loading...</p>
                 </div>
               </div>
             ) : (

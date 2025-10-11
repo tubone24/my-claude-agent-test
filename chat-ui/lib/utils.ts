@@ -11,15 +11,15 @@ export function formatTimestamp(timestamp: string): string {
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
 
   if (diffInMinutes < 1) {
-    return 'たった今';
+    return 'Just now';
   } else if (diffInMinutes < 60) {
-    return `${diffInMinutes}分前`;
+    return `${diffInMinutes}minutes ago`;
   } else if (diffInMinutes < 1440) {
     const hours = Math.floor(diffInMinutes / 60);
-    return `${hours}時間前`;
+    return `${hours}hours ago`;
   } else if (diffInMinutes < 10080) {
     const days = Math.floor(diffInMinutes / 1440);
-    return `${days}日前`;
+    return `${days}days ago`;
   } else {
     return date.toLocaleDateString('ja-JP', {
       year: 'numeric',
@@ -40,7 +40,7 @@ export function formatTokens(tokens: number): string {
 }
 
 export function generateSessionTitle(firstMessage: string, maxLength: number = 30): string {
-  if (!firstMessage) return '新しいセッション';
+  if (!firstMessage) return 'New Session';
   
   // 最初の文または最初の行を取得
   const firstLine = firstMessage.split('\n')[0];
