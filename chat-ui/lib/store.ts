@@ -74,6 +74,10 @@ interface ChatStore {
   // YAML management-related
   getAgentYAML: (agentId: string) => Promise<string | null>;
   updateAgentYAML: (agentId: string, yamlContent: string) => Promise<boolean>;
+
+  // Import/Export-related
+  importAgent: (file: File) => Promise<boolean>;
+  exportAgents: () => Promise<{ zipPath?: string } | null>;
 }
 
 export const useChatStore = create<ChatStore>()(
@@ -1023,6 +1027,44 @@ export const useChatStore = create<ChatStore>()(
         } catch (error) {
           set({ error: 'YAMLの更新中にエラーが発生しました' });
           return false;
+        }
+      },
+
+      // Import/Export関連アクション
+      importAgent: async (file: File) => {
+        try {
+          set({ isLoading: true, error: null });
+          const result = await cagentAPI.importAgent(file);
+          if (result.success) {
+            await get().loadAgents(); // インポート後にリストを更新
+            return true;
+          } else {
+            set({ error: result.error || 'エージェントのインポートに失敗しました' });
+            return false;
+          }
+        } catch (error) {
+          set({ error: 'エージェントのインポート中にエラーが発生しました' });
+          return false;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      exportAgents: async () => {
+        try {
+          set({ isLoading: true, error: null });
+          const result = await cagentAPI.exportAgents();
+          if (result.success && result.data) {
+            return { zipPath: result.data.zipPath };
+          } else {
+            set({ error: result.error || 'エージェントのエクスポートに失敗しました' });
+            return null;
+          }
+        } catch (error) {
+          set({ error: 'エージェントのエクスポート中にエラーが発生しました' });
+          return null;
+        } finally {
+          set({ isLoading: false });
         }
       },
     }),

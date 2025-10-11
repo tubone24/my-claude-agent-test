@@ -9,6 +9,9 @@ agents:
       あなたは親切で知識豊富なAIアシスタントです。
       ユーザーの質問に対して正確で役立つ回答を提供します。
       日本語で自然な会話を心がけてください。
+    toolsets:
+      - type: memory
+        path: "./funny.db"
 
 models:
   qwen:

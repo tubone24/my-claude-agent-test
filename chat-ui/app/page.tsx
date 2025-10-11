@@ -40,7 +40,9 @@ export default function Home() {
     approveOAuth,
     denyOAuth,
     getAgentYAML,
-    updateAgentYAML
+    updateAgentYAML,
+    importAgent,
+    exportAgents
   } = useChatStore()
 
   const [messageInput, setMessageInput] = useState('')
@@ -49,6 +51,10 @@ export default function Home() {
   const [isComposing, setIsComposing] = useState(false)
   const [yamlEditorOpen, setYamlEditorOpen] = useState(false)
   const [editingAgent, setEditingAgent] = useState<{ id: string; name: string } | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [showImportDialog, setShowImportDialog] = useState(false)
+  const [showExportSuccess, setShowExportSuccess] = useState(false)
+  const [exportedFilePath, setExportedFilePath] = useState('')
 
   useEffect(() => {
     const initialize = async () => {
@@ -137,6 +143,25 @@ export default function Home() {
   const handleCloseYAMLEditor = () => {
     setYamlEditorOpen(false)
     setEditingAgent(null)
+  }
+
+  const handleImportAgent = async () => {
+    if (!selectedFile) return
+    const success = await importAgent(selectedFile)
+    if (success) {
+      setSelectedFile(null)
+      setShowImportDialog(false)
+    }
+  }
+
+  const handleExportAgents = async () => {
+    const result = await exportAgents()
+    if (result && result.zipPath) {
+      setExportedFilePath(result.zipPath)
+      setShowExportSuccess(true)
+      // 5秒後に成功メッセージを閉じる
+      setTimeout(() => setShowExportSuccess(false), 5000)
+    }
   }
 
   if (isLoading && !agents.length) {
@@ -264,7 +289,99 @@ export default function Home() {
                 </Card>
               )}
             </div>
+
+            {/* Import/Export Buttons */}
+            <div className="space-y-2 pt-2 border-t">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowImportDialog(true)}
+                className="w-full text-xs"
+              >
+                📥 Import Agent
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleExportAgents}
+                className="w-full text-xs"
+                disabled={isLoading}
+              >
+                📤 Export All Agents
+              </Button>
+            </div>
           </div>
+
+          {/* Import Dialog */}
+          {showImportDialog && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <Card className="w-[400px]">
+                <CardHeader>
+                  <CardTitle>Import Agent</CardTitle>
+                  <CardDescription>
+                    エージェントのYAMLファイルを選択してください
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <input
+                      type="file"
+                      accept=".yaml,.yml"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        setSelectedFile(file || null)
+                      }}
+                      className="w-full px-3 py-2 border rounded-md text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
+                    />
+                    {selectedFile && (
+                      <p className="text-xs text-muted-foreground">
+                        選択されたファイル: {selectedFile.name}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowImportDialog(false)
+                        setSelectedFile(null)
+                      }}
+                    >
+                      キャンセル
+                    </Button>
+                    <Button
+                      onClick={handleImportAgent}
+                      disabled={!selectedFile || isLoading}
+                    >
+                      {isLoading ? 'インポート中...' : 'インポート'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Export Success Message */}
+          {showExportSuccess && (
+            <div className="fixed bottom-4 right-4 z-50">
+              <Card className="border-green-200 bg-green-50">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <span className="text-green-600 text-xl">✓</span>
+                    <div>
+                      <h4 className="font-medium text-green-800">エクスポート成功</h4>
+                      <p className="text-sm text-green-600 mt-1">
+                        ZIPファイルが作成されました
+                      </p>
+                      <p className="text-xs text-green-600 font-mono mt-2 break-all">
+                        {exportedFilePath}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Session list */}
           {currentAgent && (

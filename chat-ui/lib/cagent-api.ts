@@ -198,17 +198,90 @@ class CagentAPI {
     });
   }
 
-  async importAgent(request: ImportAgentRequest): Promise<APIResponse<ImportAgentResponse>> {
-    return this.request('/agents/import', {
-      method: 'POST',
-      body: JSON.stringify(request),
-    });
+  async importAgent(file: File): Promise<APIResponse<ImportAgentResponse>> {
+    try {
+      // Step 1: Next.jsサーバーにファイルをアップロード
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        return {
+          success: false,
+          error: `Upload failed: ${errorData.error || 'Unknown error'}`,
+        };
+      }
+
+      const uploadData = await uploadResponse.json();
+      const filePath = uploadData.filePath;
+
+      console.log('File uploaded to:', filePath);
+
+      // Step 2: Cagent APIにファイルパスを送信してImport実行
+      const importResponse = await fetch(`${this.baseUrl}/agents/import`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          file_path: filePath,
+        }),
+      });
+
+      if (!importResponse.ok) {
+        const errorData = await importResponse.text();
+        return {
+          success: false,
+          error: `HTTP ${importResponse.status}: ${errorData}`,
+        };
+      }
+
+      const data = await importResponse.json();
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '不明なエラーが発生しました',
+      };
+    }
   }
 
   async exportAgents(): Promise<APIResponse<ExportAgentsResponse>> {
-    return this.request('/agents/export', {
-      method: 'POST',
-    });
+    try {
+      const response = await fetch(`${this.baseUrl}/agents/export`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        return {
+          success: false,
+          error: `HTTP ${response.status}: ${errorData}`,
+        };
+      }
+
+      const data: ExportAgentsResponse = await response.json();
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '不明なエラーが発生しました',
+      };
+    }
   }
 
   async pullAgent(request: PullAgentRequest): Promise<APIResponse<Agent>> {
