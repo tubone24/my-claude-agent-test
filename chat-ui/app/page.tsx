@@ -25,6 +25,7 @@ export default function Home() {
     currentOAuthRequest,
     currentTokenUsage,
     currentSessionTitle,
+    streamController,
     loadAgents,
     loadSessions,
     loadSessionsByAgent,
@@ -56,6 +57,9 @@ export default function Home() {
   const [showExportSuccess, setShowExportSuccess] = useState(false)
   const [exportedFilePath, setExportedFilePath] = useState('')
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
+
+  // デバッグモードの設定（環境変数から取得）
+  const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true'
 
   useEffect(() => {
     const initialize = async () => {
@@ -554,18 +558,88 @@ export default function Home() {
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {currentAgent ? (
             <>
-              {/* Debug information - Fixed */}
-              <div className="flex-shrink-0 p-4 pb-0">
-                <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded border">
-                  <div>Session: {currentSession?.id || 'None'}</div>
-                  <div>Agent: {currentAgent?.name || 'None'}</div>
-                  <div>Loading: {isLoading ? 'Yes' : 'No'}</div>
-                  <div>Pending Tool Approval: {pendingToolApproval ? 'Yes' : 'No'}</div>
-                  {currentToolCall && (
-                    <div>Tool Call: {currentToolCall.function?.name} | Args: {currentToolCall.function?.arguments}</div>
-                  )}
+              {/* Debug information - Controlled by NEXT_PUBLIC_DEBUG_MODE */}
+              {debugMode && (
+                <div className="flex-shrink-0 p-4 pb-0">
+                  <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded border dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
+                    <div className="font-semibold mb-2 text-gray-700 dark:text-gray-200">🐛 Debug Information</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="font-semibold">Session ID:</span> {currentSession?.id || 'None'}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Agent:</span> {currentAgent?.name || 'None'}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Loading:</span> {isLoading ? '✅ Yes' : '❌ No'}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Streaming:</span> {streamController ? '✅ Active' : '❌ Inactive'}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Tool Approval Pending:</span> {pendingToolApproval ? '⏳ Yes' : '✅ No'}
+                      </div>
+                      <div>
+                        <span className="font-semibold">OAuth Auth Pending:</span> {pendingOAuthAuth ? '⏳ Yes' : '✅ No'}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Message Count:</span> {messages.length}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Session Title:</span> {currentSessionTitle || 'Not set'}
+                      </div>
+                      <div className="col-span-2">
+                        <span className="font-semibold">Tools Approved:</span> {currentSession?.tools_approved ? '✅ Yes (All)' : '❌ No (Per request)'}
+                      </div>
+                      {currentTokenUsage && (
+                        <>
+                          <div>
+                            <span className="font-semibold">Input Tokens:</span> {currentTokenUsage.input_tokens?.toLocaleString() || 0}
+                          </div>
+                          <div>
+                            <span className="font-semibold">Output Tokens:</span> {currentTokenUsage.output_tokens?.toLocaleString() || 0}
+                          </div>
+                          <div className="col-span-2">
+                            <span className="font-semibold">Total Tokens:</span> {((currentTokenUsage.input_tokens || 0) + (currentTokenUsage.output_tokens || 0)).toLocaleString()}
+                          </div>
+                          {currentTokenUsage.context_length && (
+                            <div className="col-span-2">
+                              <span className="font-semibold">Context Length:</span> {currentTokenUsage.context_length.toLocaleString()}
+                            </div>
+                          )}
+                        </>
+                      )}
+                      {currentToolCall && (
+                        <div className="col-span-2 mt-2 p-2 bg-yellow-100 dark:bg-yellow-900 rounded border border-yellow-200 dark:border-yellow-700">
+                          <div className="font-semibold text-yellow-800 dark:text-yellow-200">Current Tool Call:</div>
+                          <div className="mt-1">
+                            <span className="font-semibold">Function:</span> {currentToolCall.function?.name || 'N/A'}
+                          </div>
+                          {currentToolCall.function?.arguments && (
+                            <div className="mt-1">
+                              <span className="font-semibold">Arguments:</span>
+                              <pre className="mt-1 text-xs overflow-x-auto whitespace-pre-wrap break-all">
+                                {currentToolCall.function.arguments}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {currentOAuthRequest && (
+                        <div className="col-span-2 mt-2 p-2 bg-green-100 dark:bg-green-900 rounded border border-green-200 dark:border-green-700">
+                          <div className="font-semibold text-green-800 dark:text-green-200">Current OAuth Request:</div>
+                          <div className="mt-1">
+                            <span className="font-semibold">Server:</span> {currentOAuthRequest.serverUrl}
+                          </div>
+                          <div className="mt-1">
+                            <span className="font-semibold">Message:</span> {currentOAuthRequest.message}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Tool Approval Banner - Fixed */}
               {pendingToolApproval && (
