@@ -2,6 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ReactFlow styles */
+@import 'reactflow/dist/style.css';
+
+/* ReactFlow custom edge styles */
+.react-flow__edge-path {
+  stroke: #6366f1 !important;
+  stroke-width: 3 !important;
+}
+
+.react-flow__edge.animated path {
+  stroke-dasharray: 5;
+  animation: dashdraw 0.5s linear infinite;
+}
+
+.react-flow__edge-text {
+  fill: #6366f1;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.react-flow__edge .react-flow__edge-textbg {
+  fill: white;
+  fill-opacity: 0.8;
+}
+
+.react-flow__arrowhead {
+  fill: #6366f1 !important;
+}
+
+@keyframes dashdraw {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

@@ -107,7 +107,7 @@ export const ToolResultCard: Story = {
           </span>
         </div>
         <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-blue-900">
-          Found 3 results for "Docker Cagent"
+          Found 3 results for &quot;Docker Cagent&quot;
         </pre>
         <div className="text-xs opacity-70 mt-2 text-blue-600 flex items-center gap-2">
           <span>{new Date().toLocaleTimeString()}</span>

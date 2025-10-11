@@ -131,7 +131,7 @@ export function YAMLEditorDialog({
             <div>
               <CardTitle>YAML Editor</CardTitle>
               <CardDescription>
-                "{agentName}" Yaml file
+                &quot;{agentName}&quot; Yaml file
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">

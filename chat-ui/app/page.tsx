@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { YAMLEditorDialog } from '@/components/ui/yaml-editor-dialog'
+import { AgentGraphDialog } from '@/components/ui/agent-graph-dialog'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -53,7 +54,9 @@ export default function Home() {
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null)
   const [isComposing, setIsComposing] = useState(false)
   const [yamlEditorOpen, setYamlEditorOpen] = useState(false)
+  const [graphDialogOpen, setGraphDialogOpen] = useState(false)
   const [editingAgent, setEditingAgent] = useState<{ id: string; name: string } | null>(null)
+  const [viewingGraphAgent, setViewingGraphAgent] = useState<{ id: string; name: string } | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [showExportSuccess, setShowExportSuccess] = useState(false)
@@ -158,6 +161,17 @@ export default function Home() {
   const handleCloseYAMLEditor = () => {
     setYamlEditorOpen(false)
     setEditingAgent(null)
+  }
+
+  const handleOpenGraphDialog = (agent: any, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent agent selection
+    setViewingGraphAgent({ id: agent.name, name: agent.name })
+    setGraphDialogOpen(true)
+  }
+
+  const handleCloseGraphDialog = () => {
+    setGraphDialogOpen(false)
+    setViewingGraphAgent(null)
   }
 
   const handleImportAgent = async () => {
@@ -281,6 +295,17 @@ export default function Home() {
         />
       )}
 
+      {/* Agent Graph Dialog */}
+      {viewingGraphAgent && (
+        <AgentGraphDialog
+          agentId={viewingGraphAgent.id}
+          agentName={viewingGraphAgent.name}
+          isOpen={graphDialogOpen}
+          onClose={handleCloseGraphDialog}
+          onLoad={getAgentYAML}
+        />
+      )}
+
       <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 bg-muted/30 border-r border-border overflow-hidden`}>
@@ -325,15 +350,26 @@ export default function Home() {
                               </span>
                             )}
                           </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={(e) => handleOpenYAMLEditor(agent, e)}
-                            className="h-6 w-6 p-0 hover:bg-blue-100 hover:text-blue-600 flex-shrink-0"
-                            title="Edit YAML configuration"
-                          >
-                            📝
-                          </Button>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => handleOpenGraphDialog(agent, e)}
+                              className="h-6 w-6 p-0 hover:bg-green-100 hover:text-green-600 flex-shrink-0"
+                              title="View agent graph"
+                            >
+                              📊
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => handleOpenYAMLEditor(agent, e)}
+                              className="h-6 w-6 p-0 hover:bg-blue-100 hover:text-blue-600 flex-shrink-0"
+                              title="Edit YAML configuration"
+                            >
+                              📝
+                            </Button>
+                          </div>
                         </div>
                         <div className="text-xs text-muted-foreground line-clamp-1">
                           {agent.description || 'No description'}
@@ -404,7 +440,7 @@ export default function Home() {
                 <CardHeader>
                   <CardTitle>Import Agent</CardTitle>
                   <CardDescription>
-                      Please select the agent's YAML file.
+                      Please select the agent&apos;s YAML file.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
