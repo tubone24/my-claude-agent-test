@@ -126,6 +126,19 @@ This Playground is a web-based chat UI for interacting with Cagent agents. It pr
   ![YAML Editor](docs/images/yaml_editor.png)
   *Built-in YAML editor with syntax highlighting for agent configuration*
 
+- **Agent Structure Visualization**: Visualize agent hierarchies and relationships in an interactive graph
+
+  ![Structure Visualizer](docs/images/structure_visualizer.gif)
+  *Interactive graph showing agent hierarchies, delegation relationships, and toolsets with color-coded tool types*
+
+  The visualization feature provides:
+  - Hierarchical layout showing parent-child agent relationships
+  - Visual indicators for root agents (👑) and sub-agents (🤖)
+  - Tool usage information with color-coded badges for each tool type
+  - Model information for each agent
+  - Interactive pan and zoom controls
+  - Automatic layout using the Dagre algorithm
+
 - **Tool & Remote MCP Server Approval**: Security feature for controlling tool execution and remote MCP server access
   - Approve or deny tool calls before execution
   - Manage remote MCP server connections with user approval
@@ -136,9 +149,3 @@ This Playground is a web-based chat UI for interacting with Cagent agents. It pr
 
   ![Remote MCP Server Approval](docs/images/remote_mcp.png)
   *OAuth authentication approval for remote MCP server connections*
-
-## Deploy on Startup
-
-```bash
-cagent push ./basic_claude_agent.yaml username/my-claude-agent
-```
