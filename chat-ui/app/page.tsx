@@ -55,6 +55,7 @@ export default function Home() {
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [showExportSuccess, setShowExportSuccess] = useState(false)
   const [exportedFilePath, setExportedFilePath] = useState('')
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
 
   useEffect(() => {
     const initialize = async () => {
@@ -161,6 +162,31 @@ export default function Home() {
       setShowExportSuccess(true)
       // 5秒後に成功メッセージを閉じる
       setTimeout(() => setShowExportSuccess(false), 5000)
+    }
+  }
+
+  const handleCopyMessage = async (messageId: string, content: string, contentParts?: any[]) => {
+    try {
+      // メッセージのテキストを抽出
+      let textToCopy = ''
+      if (contentParts && contentParts.length > 0) {
+        // contentPartsがある場合は、typeが'choice'のものを抽出してコピー
+        textToCopy = contentParts
+          .filter(part => part.type === 'choice')
+          .map(part => part.content)
+          .join('\n\n')
+      } else {
+        textToCopy = content
+      }
+
+      // クリップボードにコピー
+      await navigator.clipboard.writeText(textToCopy)
+      
+      // コピー成功のフィードバック
+      setCopiedMessageId(messageId)
+      setTimeout(() => setCopiedMessageId(null), 2000)
+    } catch (error) {
+      console.error('Failed to copy message:', error)
     }
   }
 
@@ -843,6 +869,34 @@ export default function Home() {
                                 )}
                               </div>
                             </CardContent>
+                            {/* choiceタイプのメッセージの場合のみアクションボタンを表示 */}
+                            {message.role === 'assistant' && 
+                             message.contentParts && 
+                             message.contentParts.some(part => part.type === 'choice') && (
+                              <div className="px-3 pb-2 pt-0">
+                                <button
+                                  onClick={() => handleCopyMessage(
+                                    message.id || String(index),
+                                    message.content,
+                                    message.contentParts
+                                  )}
+                                  className="text-xs text-muted-foreground hover:text-foreground hover:bg-muted px-2 py-1 rounded transition-colors flex items-center gap-1"
+                                  title="クリップボードにコピー"
+                                >
+                                  {copiedMessageId === (message.id || String(index)) ? (
+                                    <>
+                                      <span>✓</span>
+                                      <span>Copied</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span>📋</span>
+                                      <span>Copy</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            )}
                           </Card>
                           {message.role === 'user' && (
                             <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
