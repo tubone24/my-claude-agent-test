@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - 2025-10-11
+
+- **Message Copy Feature**: Added clipboard copy functionality for messages ([c389b32](https://github.com/tubone24/docker-cagent-playground/commit/c389b32))
+- **Agent Import/Export**: Added import/export functionality for agent configuration files ([9c27139](https://github.com/tubone24/docker-cagent-playground/commit/9c27139))
+
+### Changed - 2025-10-11
+
+- **Code Internationalization**: Translated Japanese text to English in UI components ([9549d1a](https://github.com/tubone24/docker-cagent-playground/commit/9549d1a))
+
 ### Added - 2025-10-10
 
 - **YAML Management**: Added YAML editor dialog to edit agent configuration files directly from the UI ([4b8df1e](https://github.com/tubone24/docker-cagent-playground/commit/4b8df1e), [78c6baa](https://github.com/tubone24/docker-cagent-playground/commit/78c6baa), [4955228](https://github.com/tubone24/docker-cagent-playground/commit/4955228), [d443ac8](https://github.com/tubone24/docker-cagent-playground/commit/d443ac8))
@@ -96,8 +105,6 @@ This project is a web-based chat UI for interacting with Docker Cagent agents. I
 ## Roadmap
 
 - [ ] Add version tags and release management
-- [ ] Copy and paste button
-- [ ] Debuging mode
 
 ---
 
