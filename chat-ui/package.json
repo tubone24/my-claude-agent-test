@@ -42,7 +42,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
-    "eslint": "^8",
+    "eslint": "^9.0.0",
     "eslint-config-next": "14.0.4",
     "eslint-plugin-storybook": "^9.1.10",
     "postcss": "^8",
